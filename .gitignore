@@ -1,0 +1,115 @@
+# =============================================================================
+# .gitignore for ProteinDesign (GFP 合成生物学创新赛)
+# =============================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- 虚拟环境 ---
+.venv/
+venv/
+env/lib/
+env/bin/
+env/Scripts/
+env/include/
+env/share/
+env/pyvenv.cfg
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb_meta
+
+# --- 第三方仓库（在 Bohrium 用 bohrium_init.sh clone） ---
+third_party/
+tools/
+
+# --- 大文件（模型权重、缓存）---
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+*.h5
+*.npz
+*.npy
+*.joblib
+*.pkl
+*.pickle
+cache/
+.cache/
+~/.cache/
+.huggingface/
+
+# --- PDB / 结构文件（可重新下载，别污染 Git） ---
+inputs/pdb/*.pdb
+inputs/pdb/*.cif
+inputs/pdb/*.mmcif
+*.dcd
+*.xtc
+*.trr
+
+# --- 比赛数据（在 Bohrium /bohr/ 已挂载，本地不要 push） ---
+data/raw/
+data/exclusion_list/
+*.xlsx
+*.xls
+# 但允许 submission_template.csv 和 submission.csv 进 Git
+!data/submission_template.csv
+!outputs/submission.csv
+
+# --- 中间产物 ---
+outputs/embeddings/
+outputs/logs/
+outputs/checkpoints/
+outputs/*.tsv
+outputs/scratch/
+
+# 但保留最终结果
+!outputs/submission.csv
+!outputs/ranked.csv
+!outputs/safe_positions.csv
+!outputs/dnachisel_report.html
+
+# --- 编辑器 / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# --- 日志 ---
+*.log
+init.log
+wandb/
+mlruns/
+
+# --- 私密文件（绝不要 push） ---
+.env
+*.env
+secrets.yaml
+credentials.json
+**/api_token
+**/.esm/
+**/huggingface_token
+
+# --- 编译产物 ---
+build/
+dist/
+*.tar.gz
+*.zip
+
+# --- 临时 ---
+tmp/
+temp/
+scratch/
