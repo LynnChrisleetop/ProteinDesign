@@ -1,11 +1,14 @@
 {
-  "model": "t6_8M",
+  "model": "t12_35M",
   "device": "cuda",
-  "n_sequences": 200,
-  "embed_dim": 320,
+  "n_sequences": 141365,
+  "embed_dim": 480,
   "gfp_type_counts": {
-    "avGFP": 200
+    "avGFP": 51715,
+    "amacGFP": 33665,
+    "ppluGFP": 31434,
+    "cgreGFP": 24551
   },
   "out_file": "/personal/biosys/ProteinDesign/outputs/esm_embeddings.npz",
-  "out_size_mb": 0.2
+  "out_size_mb": 245.1
 }
