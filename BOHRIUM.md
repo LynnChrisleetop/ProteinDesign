@@ -72,6 +72,7 @@
 | --- | --- | --- |
 | `/personal/` | **持久**，机型切换都在 | **所有 git clone、模型权重、嵌入缓存放这** |
 | `/bohr/<dataset>/v1/` | **挂载只读** | 比赛数据集（GFP_data.xlsx、Exclusion_List 等），不要 cp 出来浪费空间 |
+| `../2026Protein Design/`（本地） | **本地副本** | 本机开发用的赛事数据，与 `ProteinDesign/` 仓库平级，不进 Git |
 | `/data/` 或 `/root/` | **临时**，关机即丢 | 别放重要东西 |
 | `/tmp/` | 临时 | 跑完就清掉 |
 

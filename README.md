@@ -24,7 +24,10 @@
 - 平台：[Bohrium](https://bohrium.dp.tech/)
 - 镜像：`ubuntu:22.04-py3.10-cuda12.1` （10.9 GB，GPU+CPU 通用）
 - 机型：先 CPU `c4_m8_cpu`（调试），跑大模型时切 `1×V100_32g` 或 `1×A100_40g`
-- 数据：勾选挂载赛事数据集（默认路径 `/bohr/2025proteindesign-iw1n/v1`）
+- 数据：
+  - **Bohrium**：勾选挂载赛事数据集（默认路径 `/bohr/2025proteindesign-iw1n/v1`）
+  - **本地**：放在仓库同级目录 `../2026Protein Design/`（与本仓库平级，不进 Git）
+  - 代码统一通过 `src/utils.py::DATA_DIR` 解析，二选一会自动识别
 
 ### 2. 第一次开机：5–10 分钟一键就绪
 
@@ -130,7 +133,7 @@ ProteinDesign/
 ├── docs/
 │   ├── design_doc.md         # 设计思路（最终导出 PDF 提交）
 │   └── agent_log.md          # LLM Agent 逻辑树 + 关键日志
-├── data/                     # （Bohrium 上挂载 /bohr/，本地仅放小样本）
+├── data/                     # （可选）软链 / 小样本；正式数据见仓库同级目录
 ├── inputs/pdb/               # 参考 PDB（init 脚本自动下载）
 ├── outputs/
 │   ├── safe_positions.csv
@@ -145,7 +148,7 @@ ProteinDesign/
 
 - 所有脚本在 `ubuntu:22.04-py3.10-cuda12.1` 镜像 + Python 3.10 + CUDA 12.1 下测试通过
 - 第三方依赖版本（ProteinMPNN、ThermoMPNN、ColabDesign、ESM-3）通过 `scripts/bohrium_init.sh` 锁定
-- 比赛数据集来自 Bohrium 官方挂载 `/bohr/2025proteindesign-iw1n/v1`，未在仓库中重新分发
+- 比赛数据集来自 Bohrium 官方挂载 `/bohr/2025proteindesign-iw1n/v1`（本地副本放在仓库同级 `../2026Protein Design/`），**均未在仓库中重新分发**
 
 ---
 

@@ -1,0 +1,15 @@
+source,mutation,pos,orig_aa,new_aa,avGFP_wt_aa,matches_avGFP
+superfolder,S30R,30,S,R,S,True
+superfolder,Y39N,39,Y,N,Y,True
+superfolder,F64L,64,F,L,L,False
+superfolder,S65T,65,S,T,S,True
+superfolder,F99S,99,F,S,F,True
+superfolder,N105T,105,N,T,N,True
+superfolder,Y145F,145,Y,F,Y,True
+superfolder,M153T,153,M,T,M,True
+superfolder,V163A,163,V,A,V,True
+superfolder,I171V,171,I,V,I,True
+superfolder,A206V,206,A,V,A,True
+staygold,A206K,206,A,K,A,True
+extra,F46L,46,F,L,F,True
+extra,T203Y,203,T,Y,T,True

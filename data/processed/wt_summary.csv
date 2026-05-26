@@ -1,0 +1,6 @@
+name,length,starts_with_M,length_ok,only_standard_aa,bad_chars,passes_all
+sfGFP,238,True,True,True,,True
+avGFP,238,True,True,True,,True
+amacGFP,238,True,True,True,,True
+cgreGFP,235,True,True,True,,True
+ppluGFP,222,True,True,True,,True

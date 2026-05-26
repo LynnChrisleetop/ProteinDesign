@@ -1,0 +1,85 @@
+{
+  "data_dir": "/personal/biosys/2026Protein Design",
+  "wt_brightness_log10_avGFP": 3.719212132,
+  "wt_brightness_linear_avGFP": 5238.562527280898,
+  "thresholds": {
+    "lethal_ratio": 0.05,
+    "red_line_ratio": 0.3,
+    "tolerant_ratio": 0.5,
+    "boost_ratio": 1.5,
+    "super_ratio": 2.0
+  },
+  "n_positions_with_data": 233,
+  "n_lethal_blacklist": 18,
+  "n_safe_pool": 198,
+  "n_boost_pool": 4,
+  "n_super_pool": 1,
+  "n_lit_priors": 14,
+  "n_winner_diff_avGFP": 31,
+  "n_winner_diff_sfGFP": 32,
+  "sfGFP_vs_avGFP_diff_positions": [
+    {
+      "pos": 30,
+      "avGFP": "S",
+      "sfGFP": "R"
+    },
+    {
+      "pos": 39,
+      "avGFP": "Y",
+      "sfGFP": "N"
+    },
+    {
+      "pos": 65,
+      "avGFP": "S",
+      "sfGFP": "T"
+    },
+    {
+      "pos": 80,
+      "avGFP": "Q",
+      "sfGFP": "R"
+    },
+    {
+      "pos": 99,
+      "avGFP": "F",
+      "sfGFP": "S"
+    },
+    {
+      "pos": 105,
+      "avGFP": "N",
+      "sfGFP": "T"
+    },
+    {
+      "pos": 145,
+      "avGFP": "Y",
+      "sfGFP": "F"
+    },
+    {
+      "pos": 153,
+      "avGFP": "M",
+      "sfGFP": "T"
+    },
+    {
+      "pos": 163,
+      "avGFP": "V",
+      "sfGFP": "A"
+    },
+    {
+      "pos": 171,
+      "avGFP": "I",
+      "sfGFP": "V"
+    },
+    {
+      "pos": 206,
+      "avGFP": "A",
+      "sfGFP": "V"
+    }
+  ],
+  "pool_category_counts": {
+    "SAFE": 181,
+    "UNKNOWN": 21,
+    "LETHAL": 18,
+    "BOOST+LIT+SAFE": 6,
+    "LIT+SAFE": 6,
+    "BOOST+SAFE": 6
+  }
+}

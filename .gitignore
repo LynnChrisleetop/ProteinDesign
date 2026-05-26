@@ -62,6 +62,11 @@ data/raw/
 data/exclusion_list/
 *.xlsx
 *.xls
+# 防呆：万一赛方数据目录被 cp 进仓库内也拦住
+2026Protein Design/
+2026Protein\ Design/
+Exclusion_List.csv
+referencepaper/
 # 但允许 submission_template.csv 和 submission.csv 进 Git
 !data/submission_template.csv
 !outputs/submission.csv

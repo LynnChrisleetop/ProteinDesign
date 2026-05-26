@@ -1,0 +1,60 @@
+{
+  "data_dir": "/personal/biosys/2026Protein Design",
+  "wt_compliant_count": 5,
+  "wt_lengths": {
+    "sfGFP": 238,
+    "avGFP": 238,
+    "amacGFP": 238,
+    "cgreGFP": 235,
+    "ppluGFP": 222
+  },
+  "brightness_shape": [
+    141572,
+    3
+  ],
+  "brightness_cols": [
+    "aaMutations",
+    "GFP type",
+    "Brightness"
+  ],
+  "gfp_type_counts": {
+    "avGFP": 51715,
+    "amacGFP": 33809,
+    "ppluGFP": 31480,
+    "cgreGFP": 24568
+  },
+  "wt_brightness_per_type": {
+    "avGFP": 3.719212132,
+    "amacGFP": 3.97073335455555,
+    "cgreGFP": 4.49691401841976,
+    "ppluGFP": 4.22582374669567
+  },
+  "brightness_scale_hint": "看起来是 log10 尺度（WT≈3.7 对应原值 ~5000）。后续训练时若需线性尺度，需做 10**Brightness 反变换。",
+  "before_top_shape": [
+    20,
+    2
+  ],
+  "before_top_compliant": 20,
+  "before_top_lengths": [
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238,
+    238
+  ]
+}

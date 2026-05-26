@@ -1,0 +1,58 @@
+{
+  "n_seeds": 6,
+  "n_OK": 6,
+  "n_EXCLUDED": 0,
+  "n_BAD": 0,
+  "n_in_exclusion_list": 0,
+  "exclusion_list_size": 135414,
+  "seed_summary": [
+    {
+      "Seq_ID": 1,
+      "strategy": "safe-baseline",
+      "parent": "avGFP",
+      "mutations": "S65T:S72A",
+      "length": 238,
+      "verdict": "OK"
+    },
+    {
+      "Seq_ID": 2,
+      "strategy": "winner-stack",
+      "parent": "avGFP",
+      "mutations": "S65T:S72A:Q80R:N105K:V163A",
+      "length": 238,
+      "verdict": "OK"
+    },
+    {
+      "Seq_ID": 3,
+      "strategy": "sfGFP-control-minus",
+      "parent": "sfGFP",
+      "mutations": "S72A",
+      "length": 238,
+      "verdict": "OK"
+    },
+    {
+      "Seq_ID": 4,
+      "strategy": "boost-engine",
+      "parent": "avGFP",
+      "mutations": "F46L:Q157G:V163A",
+      "length": 238,
+      "verdict": "OK"
+    },
+    {
+      "Seq_ID": 5,
+      "strategy": "gold-rush",
+      "parent": "avGFP",
+      "mutations": "F46L:S65T:S72A:Q80R:N105K:V163A",
+      "length": 238,
+      "verdict": "OK"
+    },
+    {
+      "Seq_ID": 6,
+      "strategy": "high-risk-monomer-superboost",
+      "parent": "sfGFP",
+      "mutations": "Q157G:A206K",
+      "length": 238,
+      "verdict": "OK"
+    }
+  ]
+}
