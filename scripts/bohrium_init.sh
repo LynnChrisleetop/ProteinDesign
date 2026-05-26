@@ -54,7 +54,7 @@ echo "--- Python ---"
 python --version
 echo "--- GPU ---"
 if command -v nvidia-smi >/dev/null 2>&1; then
-  nvidia-smi | head -n 15
+  nvidia-smi || true                # 别用 | head，pipefail 会被 SIGPIPE 干掉
 else
   echo "[warn] 当前节点无 GPU（CPU 节点也 OK，跑代码调试用）"
 fi

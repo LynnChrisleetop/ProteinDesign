@@ -31,12 +31,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from utils import (  # noqa: E402
     DATA_DIR,
     GFP_DATA_XLSX,
+    MUTATION_NUMBERING_SKIP_M,
     OUTPUTS_DIR,
     PROCESSED_DIR,
     WT_FASTA_TXT,
+    detect_numbering,
     parse_mutation_str,
     parse_wt_fasta,
 )
+
+# ⚠️ 编号体系统一：
+# Sarkisyan GFP_data.xlsx 用 *skip_M* 1-based（M 不算第 1 位）。
+# 本脚本所有输出位号统一转成 *with_M* 1-based（M = 1），与文献/赛方 FASTA / 02 设计对齐。
+# 转换 = 数据 pos + 1。
 
 
 LETHAL_RATIO = 0.05
@@ -70,7 +77,8 @@ def per_position_stats(df_av: pd.DataFrame, wt_seq: str, wt_log10: float) -> pd.
     df["n_mut"] = df["parsed"].apply(len)
 
     single = df[df["n_mut"] == 1].copy()
-    single["pos"] = single["parsed"].apply(lambda x: x[0][1])
+    # 数据 pos 是 skip_M 编号；+1 转成 with_M 编号后整个 codebase 编号统一
+    single["pos"] = single["parsed"].apply(lambda x: x[0][1] + 1)
     single["orig"] = single["parsed"].apply(lambda x: x[0][0])
     single["new"] = single["parsed"].apply(lambda x: x[0][2])
     single["ratio_linear"] = (10 ** single["Brightness"]) / wt_lin
@@ -81,6 +89,12 @@ def per_position_stats(df_av: pd.DataFrame, wt_seq: str, wt_log10: float) -> pd.
             continue
         ratios = g["ratio_linear"].values
         best_idx = g["ratio_linear"].idxmax()
+        orig_aa = g["orig"].iloc[0]
+        if wt_seq[pos - 1] != orig_aa:
+            raise RuntimeError(
+                f"内部 sanity check 失败：with_M pos={pos} 期望 WT={orig_aa}，"
+                f"实际 wt_seq[{pos-1}]={wt_seq[pos-1]}。请检查编号转换。"
+            )
         rows.append({
             "pos": int(pos),
             "wt_aa": wt_seq[pos - 1],
@@ -158,6 +172,22 @@ def main() -> int:
                      ["Brightness"].iloc[0])
     wt_lin = linear(wt_log10)
     print(f"  avGFP rows={len(df_av)}  WT log10={wt_log10:.4f}  (linear={wt_lin:.1f})")
+
+    print("\n[2.5] 编号体系自检 ...")
+    sample = df_av.dropna(subset=["aaMutations"]).head(500)
+    sample_muts = [
+        ("avGFP", str(r["aaMutations"]).strip())
+        for _, r in sample.iterrows()
+        if str(r["aaMutations"]).strip().upper() != "WT"
+    ]
+    numbering = detect_numbering(wts, sample_muts)
+    print(f"  detected: {numbering!r}  (expected {MUTATION_NUMBERING_SKIP_M!r})")
+    if numbering != MUTATION_NUMBERING_SKIP_M:
+        raise RuntimeError(
+            f"数据编号体系变了！expected {MUTATION_NUMBERING_SKIP_M}, got {numbering}; "
+            "本脚本的 +1 转换逻辑会失效。"
+        )
+    print(f"  本脚本输出位号 = with_M (data_pos + 1)")
 
     print("\n[3] Per-position stats from single-point mutants ...")
     stats = per_position_stats(df_av, av_wt, wt_log10)

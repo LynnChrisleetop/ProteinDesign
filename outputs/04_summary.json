@@ -1,0 +1,11 @@
+{
+  "model": "t6_8M",
+  "device": "cuda",
+  "n_sequences": 200,
+  "embed_dim": 320,
+  "gfp_type_counts": {
+    "avGFP": 200
+  },
+  "out_file": "/personal/biosys/ProteinDesign/outputs/esm_embeddings.npz",
+  "out_size_mb": 0.2
+}

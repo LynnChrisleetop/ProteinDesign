@@ -1,6 +1,6 @@
 """ESM2 嵌入 brightness 表中的所有 4 类 GFP 突变体序列。
 
-输入：GFP_data.xlsx::brightness（5 列：aaMutations / brightness / log10brightness / GFP_type / WT_aaseq）
+输入：GFP_data.xlsx::brightness（3 列：aaMutations / "GFP type" / Brightness(log10)）
 输出：
     outputs/esm_embeddings.npz   {ids, sequences, embeddings(N, D), targets(N,), gfp_type(N,)}
     outputs/04_summary.json
@@ -32,8 +32,11 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from utils import (  # noqa: E402
     GFP_DATA_XLSX,
+    MUTATION_NUMBERING_SKIP_M,
     OUTPUTS_DIR,
     apply_mutations,
+    detect_numbering,
+    parse_mutation_str,
     parse_wt_fasta,
     WT_FASTA_TXT,
 )
@@ -47,15 +50,25 @@ MODEL_MAP = {
 
 
 def build_sequences(wt_map: dict[str, str], df: pd.DataFrame) -> pd.DataFrame:
-    """把 (aaMutations, GFP_type) 还原成完整 AA 序列。
+    """把 (aaMutations, "GFP type") 还原成完整 AA 序列。
 
-    aaMutations 为空 → WT 本体。
+    **关键**：Sarkisyan 数据集用 *skip_M* 1-based 编号（与文献/赛方 FASTA 的
+    *with_M* 体系相差 1 位）。我们用 numbering=skip_M 调 apply_mutations，
+    并打开 strict=True 让任何 orig-AA 不符的行都直接报错（防止编号体系再变）。
+
+    实测列名：aaMutations / "GFP type"（含空格）/ Brightness（实为 log10）。
     """
     rows = []
     skipped = 0
+    bad_examples: list[tuple[int, str, str]] = []
     for i, r in df.iterrows():
-        gfp = str(r["GFP_type"]).strip()
-        mut = "" if pd.isna(r["aaMutations"]) else str(r["aaMutations"]).strip()
+        gfp = str(r["GFP type"]).strip()
+        if pd.isna(r["aaMutations"]):
+            mut = ""
+        else:
+            mut = str(r["aaMutations"]).strip()
+            if mut.upper() == "WT":
+                mut = ""
         wt = wt_map.get(gfp)
         if wt is None:
             skipped += 1
@@ -63,19 +76,33 @@ def build_sequences(wt_map: dict[str, str], df: pd.DataFrame) -> pd.DataFrame:
         if mut == "":
             seq = wt
         else:
-            seq = apply_mutations(wt, mut)
+            seq = apply_mutations(
+                wt, mut,
+                numbering=MUTATION_NUMBERING_SKIP_M,
+                strict=True,
+            )
             if seq is None:
                 skipped += 1
+                if len(bad_examples) < 5:
+                    bad_examples.append((int(i), gfp, mut))
                 continue
+        log10b = float(r["Brightness"])
         rows.append({
             "row_idx": int(i),
             "gfp_type": gfp,
             "mutations": mut,
-            "log10_brightness": float(r["log10brightness"]),
-            "brightness": float(r["brightness"]) if "brightness" in r else np.nan,
+            "log10_brightness": log10b,
+            "brightness": float(10.0 ** log10b),
             "sequence": seq,
         })
+    if bad_examples:
+        print(f"  [warn] apply_mutations 失败示例（前 5）：{bad_examples}")
     print(f"  built {len(rows)} sequences (skipped {skipped})")
+    if skipped > len(df) * 0.01:
+        raise RuntimeError(
+            f"超过 1% 的行 apply 失败（skipped={skipped}/{len(df)}），"
+            "编号体系或数据格式可能再次变化，请检查"
+        )
     return pd.DataFrame(rows)
 
 
@@ -148,10 +175,25 @@ def main() -> int:
     wt_map = parse_wt_fasta(WT_FASTA_TXT)
     print(f"  WT map: {list(wt_map.keys())}")
 
+    print(f"[1.5] 自动检测 brightness 表的突变编号体系 ...")
+    sample = df.dropna(subset=["aaMutations"]).head(2000)
+    sample_muts = [
+        (str(r["GFP type"]).strip(), str(r["aaMutations"]).strip())
+        for _, r in sample.iterrows()
+        if str(r["aaMutations"]).strip().upper() != "WT"
+    ]
+    numbering = detect_numbering(wt_map, sample_muts)
+    print(f"  detected numbering = {numbering!r} "
+          f"(expected '{MUTATION_NUMBERING_SKIP_M}')")
+    if numbering != MUTATION_NUMBERING_SKIP_M:
+        raise RuntimeError(
+            f"数据编号体系变了！expected {MUTATION_NUMBERING_SKIP_M}, got {numbering}"
+        )
+
     if args.gfp_only:
         only = {x.strip() for x in args.gfp_only.split(",") if x.strip()}
-        df = df[df["GFP_type"].isin(only)].reset_index(drop=True)
-        print(f"  filter GFP_type={only} -> {len(df)} rows")
+        df = df[df["GFP type"].isin(only)].reset_index(drop=True)
+        print(f"  filter 'GFP type'={only} -> {len(df)} rows")
 
     if args.limit > 0:
         df = df.head(args.limit).copy()

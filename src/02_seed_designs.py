@@ -1,18 +1,23 @@
 """Day 2.5: 用规则生成 6 条种子设计。
 
+⚠️ 编号体系：本脚本所有突变记法用 *with_M* 1-based（M = 第 1 位）。
+   数据集 (Sarkisyan) 用 *skip_M* 编号；01_position_pool.py 输出已转换为 with_M。
+
 策略基于 01_position_pool.py 的发现：
-  - 致死黑名单避开（含 Y66 发色团）
+  - 致死黑名单避开（含 Y66 发色团，with_M pos 66）
   - 优先赢家高频改动：S65T, S72A, Q80R, V163A, N105K, F46L
-  - 文献加成：A206K（单体化），数据驱动新发现 Q157G（max_ratio≈2.48）
+  - 文献加成：A206K（单体化）
+  - 数据驱动新发现：K158G（max_ratio ≈ 2.48 × WT；这是 01 在 with_M 体系下报告的真实
+    super-boost，**之前的 Q157G 是数据集 skip_M / with_M 编号体系混用导致的误读**）
   - 母本对照：avGFP（赢家偏好）vs sfGFP（指南推荐）
 
 6 条梯度（指南 §3 推荐策略 D）：
   Seq_1 保底  · avGFP + S65T + S72A
   Seq_2 稳进  · avGFP + 5 处赢家高频
-  Seq_3 对照  · sfGFP 原样（热稳定基准）
-  Seq_4 增益  · avGFP + Q157G + V163A + F46L
-  Seq_5 冲金  · avGFP + 6 处 Top-赢家
-  Seq_6 高风险· sfGFP + A206K + Q157G
+  Seq_3 对照  · sfGFP + 最小扰动 S72A（脱 Exclusion）
+  Seq_4 增益  · avGFP + F46L + K158G + V163A
+  Seq_5 冲金  · avGFP + 6 处 Top-赢家 + K158G
+  Seq_6 高风险· sfGFP + K158G + A206K
 
 输出：
   - outputs/seeds.csv      · 6 条种子（Seq_ID, Strategy, Parent, Mutations, Sequence）
@@ -51,14 +56,14 @@ SEED_PLAN = [
      "parent": "sfGFP", "mutations": "S72A",
      "rationale": "对照；sfGFP + 最小扰动 S72A（赢家最高频且 tolerant_rate=1.0），既脱 Exclusion 又保 sfGFP 稳定性"},
     {"Seq_ID": 4, "strategy": "boost-engine",
-     "parent": "avGFP", "mutations": "F46L:Q157G:V163A",
-     "rationale": "增益；F46L 折叠 + Q157G (data: 2.48× WT) + V163A"},
+     "parent": "avGFP", "mutations": "F46L:K158G:V163A",
+     "rationale": "增益；F46L 折叠 + K158G (data super-boost 2.48× WT, with_M编号) + V163A"},
     {"Seq_ID": 5, "strategy": "gold-rush",
-     "parent": "avGFP", "mutations": "F46L:S65T:S72A:Q80R:N105K:Q157G:V163A",
-     "rationale": "冲金；avGFP + 赢家 Top-6 + Q157G 超级增益；与 Seq_2 拉开距离"},
+     "parent": "avGFP", "mutations": "F46L:S65T:S72A:Q80R:N105K:K158G:V163A",
+     "rationale": "冲金；avGFP + 赢家 Top-6 + K158G 真实数据 super-boost；与 Seq_2 拉开距离"},
     {"Seq_ID": 6, "strategy": "high-risk-monomer-superboost",
-     "parent": "sfGFP", "mutations": "Q157G:A206K",
-     "rationale": "高风险；sfGFP + 单体化 A206K + Q157G 超级增益"},
+     "parent": "sfGFP", "mutations": "K158G:A206K",
+     "rationale": "高风险；sfGFP + K158G 数据 super-boost + 单体化 A206K"},
 ]
 
 

@@ -113,6 +113,17 @@ def fmt_check(check: Dict[str, object]) -> str:
 
 _MUT_RE = re.compile(r"^([A-Z])(\d+)([A-Z*.])$", re.IGNORECASE)
 
+# 两种编号体系（**真实编号体系经过实测确认**）：
+#   "with_M"  : 1-based 含起始 M（M=1, S=2, ...）；文献 / 赛方 FASTA / winner_diff
+#   "skip_M"  : 1-based 跳过起始 M（S=1, K=2, ...）；Sarkisyan GFP_data.xlsx
+#
+# 实测：avGFP 数据中的 'A109D' → orig='A' 实际是 av[109]（Python 0-based），
+#       而不是 av[108]，即数据集用 "skip_M" 编号。文献的 "S65T" → S 是 av[64]，
+#       即文献用 "with_M" 编号。两套体系**相差 1 位**。
+
+MUTATION_NUMBERING_WITH_M = "with_M"   # 默认：所有文献 / 赛方 / 设计 / WT FASTA
+MUTATION_NUMBERING_SKIP_M = "skip_M"   # Sarkisyan 数据集专用
+
 
 def parse_mutation_str(mut_str: str) -> list[tuple[str, int, str]] | None:
     """解析 `A12B:C34D` 这种突变描述串。返回 [(orig, 1-based_pos, new), ...]。
@@ -143,18 +154,75 @@ def parse_mutation_str(mut_str: str) -> list[tuple[str, int, str]] | None:
     return out
 
 
-def apply_mutations(wt: str, mut_str: str) -> str | None:
-    """把 `A12B:C34D` 应用到 WT 序列。失败返回 None。"""
+def _pos_to_idx(pos: int, numbering: str) -> int:
+    """把 1-based pos 按编号体系映射到 Python 0-based index。"""
+    if numbering == MUTATION_NUMBERING_WITH_M:
+        return pos - 1
+    if numbering == MUTATION_NUMBERING_SKIP_M:
+        return pos        # skip M 起始 M=index 0，pos 1 对应 index 1
+    raise ValueError(f"unknown numbering: {numbering!r}")
+
+
+def apply_mutations(
+    wt: str,
+    mut_str: str,
+    numbering: str = MUTATION_NUMBERING_WITH_M,
+    strict: bool = False,
+) -> str | None:
+    """把 `A12B:C34D` 应用到 WT 序列。失败返回 None。
+
+    Args:
+        wt: WT AA 序列（含起始 M）
+        mut_str: 突变串
+        numbering: "with_M"（文献，默认）或 "skip_M"（Sarkisyan 数据集）
+        strict: 若 True，则当 orig AA 与 WT 实际不符时返回 None；
+                若 False（默认），仅做替换不校验 orig（兼容旧行为）
+
+    返回突变后序列字符串，或解析失败时 None。
+    """
     parsed = parse_mutation_str(mut_str)
     if parsed is None:
         return None
     seq = list(wt)
     for orig, pos, new in parsed:
-        idx = pos - 1
+        idx = _pos_to_idx(pos, numbering)
         if not 0 <= idx < len(seq):
+            return None
+        if strict and seq[idx] != orig:
             return None
         seq[idx] = new
     return "".join(seq)
+
+
+def detect_numbering(wt_map: dict[str, str], sample_muts: list[tuple[str, str]]) -> str:
+    """通过抽样匹配，自动判断突变串使用的编号体系。
+
+    sample_muts: [(gfp_type, mut_str), ...]，至少 ≥ 20 条避免巧合。
+    """
+    score = {MUTATION_NUMBERING_WITH_M: 0, MUTATION_NUMBERING_SKIP_M: 0}
+    n_tested = 0
+    for gfp, mut in sample_muts:
+        wt = wt_map.get(gfp)
+        if wt is None:
+            continue
+        parsed = parse_mutation_str(mut)
+        if not parsed:
+            continue
+        for orig, pos, _ in parsed:
+            for sys_name in score:
+                idx = _pos_to_idx(pos, sys_name)
+                if 0 <= idx < len(wt) and wt[idx] == orig:
+                    score[sys_name] += 1
+            n_tested += 1
+    if n_tested == 0:
+        raise RuntimeError("no testable mutations")
+    best = max(score, key=score.get)
+    confidence = score[best] / max(n_tested, 1)
+    if confidence < 0.95:
+        raise RuntimeError(
+            f"numbering detection ambiguous: scores={score} of {n_tested} tested"
+        )
+    return best
 
 
 def write_fasta(seqs: Dict[str, str], path: Path | str) -> None:

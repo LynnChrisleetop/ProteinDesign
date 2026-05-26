@@ -35,9 +35,12 @@
 | 1 | safe-baseline | avGFP | `S65T:S72A` | 238 | 49.9% | 1 | ✅ |
 | 2 | winner-stack | avGFP | `S65T:S72A:Q80R:N105K:V163A` | 238 | 49.9% | 3 | ✅ |
 | 3 | sfGFP-control-minus | sfGFP | `S72A` | 238 | 50.7% | 1 | ✅ |
-| 4 | boost-engine | avGFP | `F46L:Q157G:V163A` | 238 | 50.3% | 2 | ✅ |
-| 5 | gold-rush | avGFP | `F46L:S65T:S72A:Q80R:N105K:Q157G:V163A` | 238 | 50.4% | 5 | ✅ |
-| 6 | high-risk-monomer-superboost | sfGFP | `Q157G:A206K` | 238 | 50.6% | 2 | ✅ |
+| 4 | boost-engine | avGFP | `F46L:K158G:V163A` | 238 | ~50% | 待重生 | ⏳ |
+| 5 | gold-rush | avGFP | `F46L:S65T:S72A:Q80R:N105K:K158G:V163A` | 238 | ~50% | 待重生 | ⏳ |
+| 6 | high-risk-monomer-superboost | sfGFP | `K158G:A206K` | 238 | ~50% | 待重生 | ⏳ |
+
+> v1.0 → v1.1 修正：之前 Seq_4/5/6 写的 `Q157G` 是 Sarkisyan 数据集 (skip-M 编号) 与文献 (with-M 编号) 混用导致的误读；
+> 真实数据 super-boost 是 **`K158G`**（avGFP `WT[157]=K`），已替换。详见 [docs/design_doc.md](./docs/design_doc.md) §3.6。
 
 > 全部 6 条经过 `07_dnachisel_check.py`：长度合规、M 开头、20 标准氨基酸、不在 Exclusion_List、DnaChisel 反向翻译成功（E.coli 密码子优化 + 避酶切位点 + GC 30–70%）
 
@@ -67,9 +70,11 @@ S30R, Y39N, S65T, Q80R, F99S, N105T, Y145F, M153T, V163A, I171V, A206V
 
 → 历届赢家几乎一致地"还原 avGFP"。**警示**：本届新增 72°C 热稳定考核，sfGFP 的稳定优势可能仍然成立——所以我们保留了 Seq_3/Seq_6 两条 sfGFP 母本做对照。
 
-### 3. **Q157G 是数据驱动的新发现**
+### 3. **K158G 是数据驱动的新发现**（v1.1 修正：原 Q157G 误读）
 
-avGFP 单点突变 `Q157G` 实测亮度 **2.48× WT**（线性尺度），是 single-point 数据里最强的"增益位"，且**官方教程位点池里没有**。我们把它放进了 Seq_4 / Seq_5 / Seq_6。
+avGFP 单点突变 `K158G`（with-M 编号）实测亮度 **2.48× WT**（线性尺度），是 single-point 数据里最强的"增益位"，且**官方教程位点池里没有**。我们把它放进了 Seq_4 / Seq_5 / Seq_6。
+
+> **编号体系坑**：Sarkisyan 数据集用 skip-M 编号（起始 M 不算 1）；文献/赛方 FASTA/赢家序列用 with-M 编号（M=1）。两套位号差 1。v1.0 因混用两个体系，把数据 super-boost 误读为 Q157G，已统一到 with-M 修正为 K158G。`utils.detect_numbering()` + `strict=True` 双保险防止再犯。
 
 ### 4. 致死黑名单 18 个（含发色团 Y66，绝对避开）
 

@@ -75,11 +75,11 @@
     }
   ],
   "pool_category_counts": {
-    "SAFE": 181,
-    "UNKNOWN": 21,
+    "SAFE": 174,
+    "UNKNOWN": 25,
     "LETHAL": 18,
-    "BOOST+LIT+SAFE": 6,
-    "LIT+SAFE": 6,
-    "BOOST+SAFE": 6
+    "BOOST+LIT+SAFE": 8,
+    "BOOST+SAFE": 7,
+    "LIT+SAFE": 6
   }
 }

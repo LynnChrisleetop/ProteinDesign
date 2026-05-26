@@ -2,8 +2,8 @@
 
 > **团队**：LynnChrisleetop  
 > **任务**：用计算方法设计 6 条 GFP 突变序列，最大化「热处理后亮度相对 WT 的比值」 \
-> **当前阶段**：Day 2.5 完成，6 条种子可提交保底；ML 阶段 (Day 3+) 待启动 \
-> **最后更新**：v1.0 · Day 2.5 结束
+> **当前阶段**：Day 2.5 v2（编号体系修正后）；ML 阶段 (Day 3+) 启动中 \
+> **最后更新**：v1.1 · 修正了 Sarkisyan 数据集与文献编号体系混用导致的 Q157G 误读 → K158G
 
 ---
 
@@ -121,15 +121,17 @@ WT 亮度 (log10 / linear)：
 
 判定规则：`lethal_rate > 0.5` 或 `(n_tolerant == 0 且 n_mutants_seen ≥ 3)`。
 
-得到 18 个位点（按生物学含义解释）：
+得到 18 个位点（with_M 编号；位号 = 数据集 pos + 1）：
 
 ```
-发色团 / 紧邻              : Y66
-β-barrel 内核疏水位         : F84, V93
-β-barrel 关键带电残基       : E17, D19, E32, E34, E90, E95, E124
-功能位 / 刚性               : S30, S65, P56, T59, S28
-其他不可改动                : T50, Y182, D216
+发色团 / 紧邻              : Y66 (av[65]=Y, 发色团本体), G67 (紧邻发色团)
+β-barrel 内核疏水位         : F85, V94
+β-barrel 关键带电残基       : E18, D20, E33, E35, E91, E96, E125
+功能位 / 刚性               : S31, S66*, P57, T60, S29
+其他不可改动                : T51, Y183, D217
 ```
+
+*S66 / S65 等位点：avGFP `WT[65]=Y` 是发色团，附近 S66 是发色团形成关键。
 
 数据完美对应文献——**Y66 是发色团本体**，被列入致死池正确无误。
 
@@ -172,15 +174,23 @@ S30R, Y39N, S65T, Q80R, F99S, N105T, Y145F, M153T, V163A, I171V, A206V
 
 警示：往届只评亮度，没有 72°C 热处理。**本届新增的热稳定考核可能让 sfGFP 重新占优**。所以策略上我们保留 sfGFP 母本两条做对照（Seq_3、Seq_6）。
 
-### 3.6 关键发现 3：**Q157G 是数据驱动的新发现**
+### 3.6 关键发现 3：**K158G 是数据驱动的新发现**
 
 ```
-super_boost_positions.csv:
+super_boost_positions.csv (修正后 with_M 编号):
   pos  wt_aa  n_mutants_seen  max_ratio  best_substitution  best_ratio
-  157  Q      7               2.479      G                  2.479
+  158  K      7               2.479      G                  2.479
 ```
 
-avGFP 单点 Q157G 实测亮度 **2.48 × WT**，是 single-point 数据里最强的"增益位"，**官方教程位点池里没有**。我们把它纳入 Seq_4 / Seq_5 / Seq_6。
+avGFP 单点 K158G 实测亮度 **2.48 × WT**，是 single-point 数据里最强的"增益位"，**官方教程位点池里没有**。我们把它纳入 Seq_4 / Seq_5 / Seq_6。
+
+> **⚠️ 编号体系坑（v1.0 → v1.1 的修正）**：Sarkisyan brightness 数据集使用 **skip-M 1-based 编号**
+> （起始 M 不算第 1 位，S=1），而文献 / 赛方 FASTA / 我们的 `apply_mutations` 用 **with-M
+> 1-based 编号**（M=1）。两者位号差 1。v1.0 的 `01_position_pool.py` 在读数据时混用了两个体系，
+> 把数据集的 `pos=157`（=skip_M）配上了 `WT[157-1]=Q`（=with_M 取字），导致整张
+> `super_boost_positions.csv` 的 `wt_aa` 列错位。**修正后**统一以 with_M 编号输出，数据
+> super-boost 真实身份是 **K158G**（avGFP `WT[157]=K`），而不是 v1.0 报告的 Q157G。所有 Seq_4 / 5 / 6
+> 已替换。`detect_numbering()` + `strict=True` 双保险防止再次出错。
 
 ### 3.7 赢家相对 avGFP 的高频改动（赢家"指纹"）
 
@@ -231,14 +241,14 @@ score(lethal_pos) = -100.0                  # 致死位惩罚
 
 ### 4.2 6 条设计明细
 
-| Seq | 策略 | 母本 | 突变 | 设计动机 |
+| Seq | 策略 | 母本 | 突变（with_M 编号） | 设计动机 |
 |---|---|---|---|---|
 | **1** | safe-baseline | avGFP | `S65T:S72A` | 赢家最高频两改（9/20 each），最少改动保底 |
 | **2** | winner-stack | avGFP | `S65T:S72A:Q80R:N105K:V163A` | 赢家 Top-5 高频改动叠加，稳进 |
 | **3** | sfGFP-control-minus | sfGFP | `S72A` | sfGFP + 最小扰动；热稳定基准 |
-| **4** | boost-engine | avGFP | `F46L:Q157G:V163A` | F46L 折叠 + Q157G (2.48× super-boost) + V163A |
-| **5** | gold-rush | avGFP | `F46L:S65T:S72A:Q80R:N105K:Q157G:V163A` | Seq_2 + F46L + Q157G，主力冲金 |
-| **6** | high-risk-monomer-superboost | sfGFP | `Q157G:A206K` | sfGFP 单体化（A206K）+ 超级增益 Q157G |
+| **4** | boost-engine | avGFP | `F46L:K158G:V163A` | F46L 折叠 + K158G (data 2.48× super-boost) + V163A |
+| **5** | gold-rush | avGFP | `F46L:S65T:S72A:Q80R:N105K:K158G:V163A` | Seq_2 + F46L + K158G，主力冲金 |
+| **6** | high-risk-monomer-superboost | sfGFP | `K158G:A206K` | sfGFP 单体化（A206K）+ 真实数据 super-boost K158G |
 
 ### 4.3 每条设计的风险评估
 
@@ -247,9 +257,9 @@ score(lethal_pos) = -100.0                  # 致死位惩罚
 | 1 | 高保活，低增益 | avGFP 整体热稳定不足 → Ffinal 偏低 | 由 Seq_3/6 兜底 |
 | 2 | 中等保活，中等增益 | 5 突变累积扰动 | 由 Seq_1 兜底 |
 | 3 | 高稳定，亮度中性 | S72A 单点不显眼 | 单项最佳热稳定狙击 |
-| 4 | 高增益赌注 | Q157G 不复现 / F46L 与 V163A 不协同 | 由 Seq_1/2 兜底 |
+| 4 | 高增益赌注 | K158G 与 F46L / V163A 不协同 | 由 Seq_1/2 兜底 |
 | 5 | 主力冲金 | 7 突变累积破坏 → Finitial 跌破红线 | 由 Seq_1/2 兜底 |
-| 6 | 高风险高收益 | A206K + Q157G + sfGFP 三重叠加爆炸 | 接受失败 |
+| 6 | 高风险高收益 | A206K + K158G + sfGFP 三重叠加爆炸 | 接受失败 |
 
 ### 4.4 为什么 Seq_3 不是"sfGFP 原样"？
 
@@ -331,7 +341,7 @@ unique parents = 2 (avGFP × 4, sfGFP × 2)
 2. **完全没有热稳定预测**——本届新增的 72°C 维度是评分核心，目前完全靠 sfGFP 的"经验稳定性"
 3. **只有 2 个母本**（avGFP / sfGFP）——cgreGFP（最亮 WT）未利用
 4. **6 条之间相关性较高**——Seq_2 vs Seq_5 hamming = 2
-5. **Q157G 是个赌注**——单点 2.48× 来自 7 次观察，与多点组合的协同未知
+5. **K158G 是个赌注**——单点 2.48× 来自 7 次观察，与多点组合的协同未知
 
 ### 6.2 P0：提交保底（已可做）
 
