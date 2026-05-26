@@ -19,8 +19,10 @@
 | **Day 3** · ESM 嵌入 + 回归模型 | ⏸️ | — | **需 GPU**，下一步：切 V100 |
 | **Day 4** · 候选生成（10k+） + 筛选 | ⏸️ | — | 依赖 Day 3 |
 | **Day 5** · 热稳定预测（ThermoMPNN） | ⏸️ | — | **需 GPU**，核心评分维度 |
-| **Day 6** · 最终 6 条 + `submission.csv` | ⏸️ | — | 当前种子可作保底提交 |
-| 设计思路 PDF · agent_log · 公开仓库 | 🔵 | `docs/design_doc.md`（待写） | 与代码并行整理 |
+| **Day 6** · 最终 6 条 + `submission.csv` | ✅ 保底就绪 | `outputs/submission.csv` (CRLF, 字节级对齐模板) | 可随时上交保底；ML 阶段产出会覆盖 |
+| 设计思路文档 | ✅ | `docs/design_doc.md` | Day 1–2.5 完整决策树 + 关键发现 |
+| GPU 启动指南 | ✅ | `docs/gpu_launch.md` | 切 V100/A100 后的逐步开炮指南 |
+| agent_log · 公开仓库 | 🔵 | （待写） | 与代码并行整理 |
 
 > ✅ 完成 · ⚠️ 完成但有警告 · ⏸️ 待启动 · 🔵 同步推进
 
@@ -94,11 +96,12 @@ ProteinDesign/
 │   ├── 01_position_pool.py      # · 三股证据合成位点池（数据+文献+赢家diff）
 │   ├── 02_seed_designs.py       # · 6 条种子设计（规则驱动，无 ML）
 │   ├── 03_diversity_check.py    # · 6 条之间的 Hamming / 母本多样性
-│   └── 07_dnachisel_check.py    # · 完整体检：合规 + Exclusion + DnaChisel
-│   # —— 以下待写（需要 GPU 阶段）——
-│   # ├── 04_embed_esm.py
-│   # ├── 05_train_regressor.py
-│   # ├── 06_generate_candidates.py
+│   ├── 06_make_submission.py    # · 把 seeds.csv 转赛方提交格式（CRLF 对齐）
+│   ├── 07_dnachisel_check.py    # · 完整体检：合规 + Exclusion + DnaChisel
+│   ├── 04_embed_esm.py          # · ESM2 嵌入（**需 GPU**）
+│   ├── 05_train_regressor.py    # · LightGBM 亮度回归（CPU/GPU 均可）
+│   # —— 以下待写（依赖 04/05 结果再写）——
+│   # ├── 06b_generate_candidates.py
 │   # └── 08_thermompnn.py
 ├── data/
 │   ├── raw/                     # （留空，gitignored）赛事数据软链点
@@ -115,6 +118,7 @@ ProteinDesign/
     ├── 07_summary.json
     ├── seeds.csv                # ⭐ 6 条种子设计（当前最佳）
     ├── seeds.fasta
+    ├── submission.csv           # ⭐⭐ 赛方格式（CRLF），可直接提交
     ├── 07_seed_check.csv        # ⭐ 6 条体检详表
     ├── 07_seed_dna.csv          # 6 条的 DNA（DnaChisel 反向翻译）
     ├── position_pool.csv        # 238 位点综合得分
@@ -177,6 +181,8 @@ python src/01_position_pool.py      # ~10s   · 238 位点综合得分
 python src/02_seed_designs.py       # ~1s    · 生成 6 条种子
 python src/07_dnachisel_check.py    # ~5s    · 完整体检（含 DnaChisel）
 python src/03_diversity_check.py    # ~1s    · 多样性诊断
+python src/06_make_submission.py --team <YourTeam> --strict-check
+                                    # ~1s    · 生成赛方格式 submission.csv
 ```
 
 总耗时 < 30 秒。所有产物落到 `outputs/`，无副作用、可复现。
@@ -185,15 +191,17 @@ python src/03_diversity_check.py    # ~1s    · 多样性诊断
 
 ## ⏳ 还差什么（按优先级）
 
-### P0 — 提交保底（**已可做**）
-- [ ] 用当前 `outputs/seeds.csv` 6 条生成符合赛方格式的 `outputs/submission.csv`（`Team_Name, Seq_ID, Sequence`）
-- [ ] 写 `docs/design_doc.md` 说明 Day 1–2.5 的决策树（→ 后期导出 PDF）
+### P0 — 提交保底（**已完成**）
+- [x] `outputs/submission.csv` 已生成（CRLF + 字节级对齐模板，1575 bytes）
+- [x] `docs/design_doc.md`：Day 1–2.5 完整决策树 + 关键发现（→ 后期导出 PDF）
+- [x] `docs/gpu_launch.md`：切 GPU 后的逐步开炮指南
 
-### P1 — ML 阶段（**需 GPU，¥10–20**）
-- [ ] `src/04_embed_esm.py`：ESM2-150M 嵌入 ≥ 20k 序列（不是教程的 5k）
-- [ ] `src/05_train_regressor.py`：LightGBM 替代 RF，目标 R² ≥ 0.40（教程仅 0.28）
-- [ ] `src/06_generate_candidates.py`：用 30 位点池生成 10k+ 组合突变，用模型筛 Top-200
-- [ ] 把模型预测最佳的 2–3 条替换当前 Seq_4/5/6
+### P1 — ML 阶段（**需 GPU，¥5–15**）
+- [x] `src/04_embed_esm.py`：ESM2 (35M / 150M / 650M) 嵌入，CRC pool over residues
+- [x] `src/05_train_regressor.py`：LightGBM 替代 RF，目标 R² ≥ 0.40（教程仅 0.28）
+- [ ] **跑** Day 3.1（ESM 嵌入）+ Day 3.2（训练）→ 拿到 R²
+- [ ] `src/06b_generate_candidates.py`（依赖 R² 结果再写）：用 30 位点池生成 10k+ 组合，用模型筛 Top-200
+- [ ] 把模型预测最佳的 2–3 条替换当前 Seq_4/5/6 → 重新 `06_make_submission.py`
 
 ### P2 — 热稳定预测（**核心评分维度，需 GPU**）
 - [ ] `src/08_thermompnn.py`：对所有候选跑 ThermoMPNN 全位点 ΔΔG 扫描
@@ -205,9 +213,9 @@ python src/03_diversity_check.py    # ~1s    · 多样性诊断
 - [ ] 加 1 条共识序列设计（多 WT 拼接）
 
 ### P4 — 加分项
-- [ ] 设计思路 PDF（导出 design_doc.md）
+- [ ] 设计思路 PDF（导出 `docs/design_doc.md`）
 - [ ] `docs/agent_log.md`：LLM 决策树记录
-- [ ] GitHub README 复现说明（本文件）
+- [x] GitHub README 复现说明（本文件）
 
 ---
 
@@ -231,7 +239,8 @@ python src/03_diversity_check.py    # ~1s    · 多样性诊断
 | **[参赛指南.md](./参赛指南.md)** | 战略全文（931 行）：规则解读、6 条梯度策略、位点池、模型管线、提交自检、开源工具箱 |
 | **[BOHRIUM.md](./BOHRIUM.md)** | Bohrium 平台操作手册：选镜像、机型、协作、关机省钱 |
 | `scripts/bohrium_init.sh` | Bohrium 一键初始化（装环境 + clone 第三方 + 下 PDB） |
-| `docs/design_doc.md` | (待写) 设计思路，最终导出 PDF 提交 |
+| **[docs/design_doc.md](./docs/design_doc.md)** | ⭐ Day 1–2.5 设计思路完整文档，最终导出 PDF 提交 |
+| **[docs/gpu_launch.md](./docs/gpu_launch.md)** | ⭐ 切 V100/A100 后逐步开炮指南（含预算预估） |
 
 ---
 

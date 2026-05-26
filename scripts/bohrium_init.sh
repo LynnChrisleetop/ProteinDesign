@@ -9,7 +9,7 @@ set -euo pipefail
 
 # --- 0. 基本路径 ---
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WORKSPACE="${WORKSPACE:-/personal/proteindesign}"   # 持久工作区
+WORKSPACE="${WORKSPACE:-/personal/biosys}"          # 持久工作区
 THIRD_PARTY="${PROJECT_ROOT}/third_party"
 INPUTS_DIR="${PROJECT_ROOT}/inputs"
 OUTPUTS_DIR="${PROJECT_ROOT}/outputs"
