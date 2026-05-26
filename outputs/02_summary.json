@@ -42,7 +42,7 @@
       "Seq_ID": 5,
       "strategy": "gold-rush",
       "parent": "avGFP",
-      "mutations": "F46L:S65T:S72A:Q80R:N105K:V163A",
+      "mutations": "F46L:S65T:S72A:Q80R:N105K:Q157G:V163A",
       "length": 238,
       "verdict": "OK"
     },
