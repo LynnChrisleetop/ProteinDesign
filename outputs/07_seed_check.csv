@@ -1,7 +1,7 @@
 Seq_ID,strategy,parent,mutations,length,starts_with_M,only_standard_aa,basic_passes,in_exclusion,nearest_excl_hamming,n_same_length_excl,dna_ok,dna_gc,dna_elapsed_s,dna_fail_reason,verdict,note
-1,safe-baseline,avGFP,S65T:S72A,238,True,True,True,False,1,82351,True,0.4972,0.14,,OK,hamming=1 (与禁用序列距离极近，但合规)
-2,winner-stack,avGFP,S65T:S72A:Q80R:N105K:V163A,238,True,True,True,False,3,82351,True,0.5028,0.13,,OK,
-3,sfGFP-control-minus,sfGFP,S72A,238,True,True,True,False,1,82351,True,0.507,0.14,,OK,hamming=1 (与禁用序列距离极近，但合规)
-4,boost-engine,avGFP,F46L:K158G:V163A,238,True,True,True,False,2,82351,True,0.5028,0.13,,OK,
-5,gold-rush,avGFP,F46L:S65T:S72A:Q80R:N105K:K158G:V163A,238,True,True,True,False,5,82351,True,0.5056,0.13,,OK,
-6,high-risk-monomer-superboost,sfGFP,K158G:A206K,238,True,True,True,False,2,82351,True,0.514,0.14,,OK,
+1,safe-baseline,avGFP,S65T:S72A,238,True,True,True,False,1,82351,True,0.4958,0.14,,OK,hamming=1 (与禁用序列距离极近，但合规)
+2,winner-stack,avGFP,S65T:S72A:Q80R:N105K:V163A,238,True,True,True,False,3,82351,True,0.5,0.13,,OK,
+3,sfGFP-control-minus,sfGFP,S72A,238,True,True,True,False,1,82351,True,0.5098,0.12,,OK,hamming=1 (与禁用序列距离极近，但合规)
+4,boost-engine,avGFP,F46L:K158G:V163A,238,True,True,True,False,2,82351,True,0.5056,0.14,,OK,
+5,ml-top1-candidate,avGFP,S65T:S72A:N105Y:S147N:I171S:L178V,238,True,True,True,False,5,82351,True,0.4972,0.13,,OK,
+6,high-risk-monomer-superboost,sfGFP,K158G:A206K,238,True,True,True,False,2,82351,True,0.5084,0.13,,OK,

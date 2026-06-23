@@ -1,8 +1,8 @@
 {
-  "pairwise_hamming_mean": 7.466666666666667,
-  "pairwise_hamming_median": 8.0,
-  "pairwise_hamming_min": 2,
-  "pairwise_hamming_max": 13,
+  "pairwise_hamming_mean": 8.4,
+  "pairwise_hamming_median": 9.0,
+  "pairwise_hamming_min": 3,
+  "pairwise_hamming_max": 14,
   "n_unique_parents": 2,
   "parents_used": {
     "avGFP": 4,
@@ -10,21 +10,9 @@
   },
   "closest_to_avGFP": 2,
   "farthest_to_avGFP": 12,
-  "warning_pair_near_duplicate": {
-    "msg": "有种子对 Hamming ≤ 2，几乎重复，浪费 6 槽",
-    "pairs": [
-      {
-        "Seq_A": 2,
-        "Seq_B": 5,
-        "strategy_A": "winner-stack",
-        "strategy_B": "gold-rush",
-        "hamming": 2
-      }
-    ]
-  },
   "warning_few_parents": "只使用了 ≤2 个母本（av/sf）；建议至少加 1 条 cgreGFP 或共识母本。",
   "cgreGFP_len": 235,
   "cgreGFP_compliant": true,
   "cgreGFP_d_to_avGFP": 238,
-  "diversity_verdict": "NEEDS_DIVERSIFICATION"
+  "diversity_verdict": "GOOD"
 }
