@@ -1,0 +1,12 @@
+{
+  "esm_model": "t12_35M",
+  "n_sampled": 5000,
+  "n_unique": 5000,
+  "n_compliant": 5000,
+  "n_top": 20,
+  "best_pred_log10": 3.7102093642969476,
+  "best_ratio": 1.266565082438364,
+  "best_mutations": "S65T:S72A:N105Y:S147N:I171S:L178V",
+  "av_y": 3.6075818533779285,
+  "sf_y_proxy": 2.273136190944864
+}

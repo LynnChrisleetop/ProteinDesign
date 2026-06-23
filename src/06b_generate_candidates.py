@@ -68,26 +68,31 @@ def build_tier_b(pool: pd.DataFrame, lethal_set: set[int],
 
 
 def generate(av: str, sf: str, tier_b: list[tuple[int, str, str]],
-             n: int, av_frac: float = 0.7, seed: int = 42) -> list[dict]:
+             n_samples: int, av_frac: float = 0.7, seed: int = 42) -> list[dict]:
     rng = random.Random(seed)
     seen: set[tuple[str, str]] = set()
     out: list[dict] = []
     tier_a_parsed = [(m[0], int(m[1:-1]), m[-1]) for m in TIER_A]
-    tier_a_pos = {p for _, p, _ in tier_a_parsed}
 
-    for _ in range(n * 6):
-        if len(out) >= n:
+    for _ in range(n_samples * 6):
+        if len(out) >= n_samples:
             break
         parent = "avGFP" if rng.random() < av_frac else "sfGFP"
         wt = av if parent == "avGFP" else sf
         k = rng.choice([1, 1, 2, 2, 3, 4])
         k = min(k, len(tier_b))
         extra = rng.sample(tier_b, k)
-        all_muts: dict[int, tuple[str, str]] = {p: (o, n) for _, p, n in tier_a_parsed
-                                                 for o in [wt[p - 1]]}
-        for p, o, n in extra:
-            all_muts[p] = (o, n)
-        mut_str = ":".join(f"{o}{p}{n}" for p, (o, n) in sorted(all_muts.items()))
+        # 用 orig_aa / new_aa 避免与外层变量名冲突
+        all_muts: dict[int, tuple[str, str]] = {
+            pos: (orig, new_aa)
+            for orig, pos, new_aa in tier_a_parsed
+        }
+        for pos, orig_aa, new_aa in extra:
+            all_muts[pos] = (orig_aa, new_aa)
+        mut_str = ":".join(
+            f"{orig}{pos}{new_aa}"
+            for pos, (orig, new_aa) in sorted(all_muts.items())
+        )
         key = (parent, mut_str)
         if key in seen:
             continue
@@ -178,7 +183,7 @@ def main() -> int:
 
     # ── 生成候选 ──────────────────────────────────────────────────
     print(f"\n[3] 随机采样 {args.n_samples} 个候选 ...")
-    cands = generate(av, sf, tier_b, args.n_samples, seed=args.rng_seed)
+    cands = generate(av, sf, tier_b, n_samples=args.n_samples, seed=args.rng_seed)
     print(f"  generated {len(cands)} unique")
 
     keep = [c for c in cands
