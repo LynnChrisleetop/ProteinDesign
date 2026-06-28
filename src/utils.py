@@ -4,7 +4,7 @@
 
 数据目录解析优先级：
   1. 环境变量 GFP_DATA_DIR
-  2. Bohrium 挂载点 /bohr/2025proteindesign-iw1n/v1/
+  2. 可选挂载点 /bohr/2025proteindesign-iw1n/v1/（云环境）
   3. 仓库同级目录 ../2026Protein Design/
 """
 from __future__ import annotations

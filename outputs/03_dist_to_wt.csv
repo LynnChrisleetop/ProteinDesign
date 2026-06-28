@@ -1,7 +1,7 @@
 Seq_ID,strategy,parent,d_to_sfGFP,d_to_avGFP,d_to_amacGFP,d_to_cgreGFP,d_to_ppluGFP
 1,safe-baseline,avGFP,11,2,41,238,238
-2,winner-stack,avGFP,9,5,41,238,238
+2,draftB-repl-c21,avGFP,13,5,43,238,238
 3,sfGFP-control-minus,sfGFP,1,12,45,238,238
-4,boost-engine,avGFP,12,3,43,238,238
-5,gold-rush,avGFP,11,7,42,238,238
-6,high-risk-monomer-superboost,sfGFP,2,12,46,238,238
+4,draftB-repl-c23,avGFP,12,5,43,238,238
+5,draftB-gold-c2,avGFP,13,4,43,238,238
+6,draftB-lottery-mltop1,avGFP,13,6,44,238,238

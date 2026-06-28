@@ -28,8 +28,13 @@ env/pyvenv.cfg
 .ipynb_checkpoints/
 *.ipynb_meta
 
-# --- 第三方仓库（在 Bohrium 用 bohrium_init.sh clone） ---
+# --- 第三方仓库（由 scripts/setup_env.sh clone） ---
 third_party/
+
+# --- 队内内部文档（不上传公开仓库） ---
+BOHRIUM.md
+docs/gpu_launch.md
+scripts/bohrium_init.sh
 tools/
 
 # --- 大文件（模型权重、缓存）---
@@ -57,7 +62,7 @@ inputs/pdb/*.mmcif
 *.xtc
 *.trr
 
-# --- 比赛数据（在 Bohrium /bohr/ 已挂载，本地不要 push） ---
+# --- 比赛数据（不进 Git） ---
 data/raw/
 data/exclusion_list/
 *.xlsx

@@ -383,10 +383,9 @@ unique parents = 2 (avGFP × 4, sfGFP × 2)
 
 ### 7.1 环境锁定
 
-- 镜像：`ubuntu:22.04-py3.10-cuda12.1`（Bohrium 标准）
-- Python：3.10.6
-- 关键包版本：见 `requirements.txt` 与 `scripts/bohrium_init.sh`
-- Day 1–2.5 仅需 CPU（4 核 / 8 GB），全套 30 秒跑完
+- 推荐环境：Ubuntu 22.04，Python 3.10，CUDA 12.1（GPU 阶段）
+- 关键包版本：见 `requirements.txt` 与 `scripts/setup_env.sh`
+- 阶段 ①–④ 仅需 CPU，全套约 30 秒跑完
 
 ### 7.2 一键复现命令
 
@@ -394,7 +393,7 @@ unique parents = 2 (avGFP × 4, sfGFP × 2)
 git clone https://github.com/LynnChrisleetop/ProteinDesign.git
 cd ProteinDesign
 
-# 放赛事数据到 ../2026Protein Design/  或 挂载 /bohr/...
+# 放赛事数据到 ../2026Protein Design/  或 export GFP_DATA_DIR=...
 
 pip install pandas numpy openpyxl scikit-learn lightgbm biopython joblib \
             matplotlib seaborn dnachisel python-codon-tables

@@ -1,0 +1,25 @@
+# Core (CPU pipeline + submission)
+pandas>=2.0
+numpy>=1.24
+openpyxl>=3.1
+scikit-learn>=1.3
+lightgbm>=4.0
+biopython>=1.81
+joblib>=1.3
+matplotlib>=3.7
+seaborn>=0.13
+dnachisel>=3.2
+python-codon-tables>=0.1
+pyyaml>=6.0
+tqdm>=4.65
+scipy>=1.10
+
+# ML / embedding (GPU recommended; install PyTorch separately — see README)
+fair-esm>=2.0
+transformers>=4.36
+sentencepiece>=0.1.99
+
+# ThermoMPNN inference (optional stability stage)
+omegaconf>=2.3
+pytorch-lightning>=2.0
+wandb>=0.16

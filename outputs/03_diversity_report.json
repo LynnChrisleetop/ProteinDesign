@@ -1,18 +1,30 @@
 {
-  "pairwise_hamming_mean": 8.4,
-  "pairwise_hamming_median": 9.0,
-  "pairwise_hamming_min": 3,
-  "pairwise_hamming_max": 14,
+  "pairwise_hamming_mean": 6.333333333333333,
+  "pairwise_hamming_median": 5.0,
+  "pairwise_hamming_min": 2,
+  "pairwise_hamming_max": 12,
   "n_unique_parents": 2,
   "parents_used": {
-    "avGFP": 4,
-    "sfGFP": 2
+    "avGFP": 5,
+    "sfGFP": 1
   },
   "closest_to_avGFP": 2,
   "farthest_to_avGFP": 12,
+  "warning_pair_near_duplicate": {
+    "msg": "有种子对 Hamming ≤ 2，几乎重复，浪费 6 槽",
+    "pairs": [
+      {
+        "Seq_A": 1,
+        "Seq_B": 5,
+        "strategy_A": "safe-baseline",
+        "strategy_B": "draftB-gold-c2",
+        "hamming": 2
+      }
+    ]
+  },
   "warning_few_parents": "只使用了 ≤2 个母本（av/sf）；建议至少加 1 条 cgreGFP 或共识母本。",
   "cgreGFP_len": 235,
   "cgreGFP_compliant": true,
   "cgreGFP_d_to_avGFP": 238,
-  "diversity_verdict": "GOOD"
+  "diversity_verdict": "NEEDS_DIVERSIFICATION"
 }
