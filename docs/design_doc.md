@@ -2,8 +2,8 @@
 
 > **团队**：LynnChrisleetop  
 > **任务**：用计算方法设计 6 条 GFP 突变序列，最大化「热处理后亮度相对 WT 的比值」 \
-> **当前阶段**：Day 2.5 v2（编号体系修正后）；ML 阶段 (Day 3+) 启动中 \
-> **最后更新**：v1.1 · 修正了 Sarkisyan 数据集与文献编号体系混用导致的 Q157G 误读 → K158G
+> **当前阶段**：最终提交版（Draft B）· 已通过 Exclusion + DnaChisel + 赛方模板自检 \
+> **最后更新**：v2.0 · Draft B：ML + ThermoMPNN 联合优化后的 6 条终稿（`outputs/submission.csv`）
 
 ---
 
@@ -172,7 +172,7 @@ S30R, Y39N, S65T, Q80R, F99S, N105T, Y145F, M153T, V163A, I171V, A206V
 
 → **20 条历史赢家几乎一致地把 Superfolder 改回 avGFP 原版**。这与官方教程及多数文献推荐的"sfGFP 母本"不一致。
 
-警示：往届只评亮度，没有 72°C 热处理。**本届新增的热稳定考核可能让 sfGFP 重新占优**。所以策略上我们保留 sfGFP 母本两条做对照（Seq_3、Seq_6）。
+警示：往届只评亮度，没有 72°C 热处理。**本届新增的热稳定考核可能让 sfGFP 重新占优**。终稿保留 **Seq_3** 一条 sfGFP 对照。
 
 ### 3.6 关键发现 3：**K158G 是数据驱动的新发现**
 
@@ -229,39 +229,53 @@ score(lethal_pos) = -100.0                  # 致死位惩罚
 
 ---
 
-## 4. 六条种子设计（Day 2.5）
+## 4. 最终六条设计（Draft B）
 
 ### 4.1 设计原则
 
 1. **避开致死黑名单**（含 Y66 发色团）
-2. **优先赢家高频改动**（依据 §3.7）
-3. **梯度排布**：保底 1 条 → 稳进 2 条 → 增益 1 条 → 冲金 1 条 → 高风险 1 条
-4. **母本对照**：avGFP 4 条 + sfGFP 2 条
-5. **6 条互相 Hamming ≥ 2**（避免重复浪费 6 槽）
+2. **规则初筛 + ML 亮度 + ThermoMPNN 热稳定** 三阶段收敛
+3. **梯度排布**：保底 1 条 → 中稳 2 条 → sfGFP 对照 1 条 → 冲金 1 条 → 彩票 1 条
+4. **母本**：avGFP × 5 + sfGFP × 1（Seq_3 保留 superfolder 对照）
+5. **6 条序列互不相同**；Seq_1 ↔ Seq_5 Hamming = 2（共享 S65T:S72A 骨架，刻意「保底 + 冲金」）
 
-### 4.2 6 条设计明细
+### 4.2 最终 6 条明细（提交版）
 
-| Seq | 策略 | 母本 | 突变（with_M 编号） | 设计动机 |
-|---|---|---|---|---|
-| **1** | safe-baseline | avGFP | `S65T:S72A` | 赢家最高频两改（9/20 each），最少改动保底 |
-| **2** | winner-stack | avGFP | `S65T:S72A:Q80R:N105K:V163A` | 赢家 Top-5 高频改动叠加，稳进 |
-| **3** | sfGFP-control-minus | sfGFP | `S72A` | sfGFP + 最小扰动；热稳定基准 |
-| **4** | boost-engine | avGFP | `F46L:K158G:V163A` | F46L 折叠 + K158G (data 2.48× super-boost) + V163A |
-| **5** | gold-rush | avGFP | `F46L:S65T:S72A:Q80R:N105K:K158G:V163A` | Seq_2 + F46L + K158G，主力冲金 |
-| **6** | high-risk-monomer-superboost | sfGFP | `K158G:A206K` | sfGFP 单体化（A206K）+ 真实数据 super-boost K158G |
+| Seq | 角色 | 策略 | 母本 | 突变（with_M） | ML ratio | ΔΔG | 设计动机 |
+|:---:|---|---|---|---|:---:|:---:|---|
+| **1** | 保底 | safe-baseline | avGFP | `S65T:S72A` | 0.88 | −0.11 | 赢家最高频两改，最少扰动 |
+| **2** | 中稳 | draftB-repl-c21 | avGFP | `S65T:S72A:K79R:N105Y:I167V` | 0.91 | −0.48 | 替换原 winner-stack；Top200 cand#21 |
+| **3** | sfGFP 对照 | sfGFP-control | sfGFP | `S72A` | 0.70 | −0.10 | superfolder 骨架 + 最小扰动 |
+| **4** | 中稳 | draftB-repl-c23 | avGFP | `S65T:S72A:V93F:L178V:A206V` | 0.90 | −0.52 | 替换原 boost-engine（原 ΔΔG +4.3）；cand#23 |
+| **5** | **冲金主炮** | draftB-gold-c2 | avGFP | `S65T:S72A:K79R:L178V` | **1.25** | **−0.35** | Top200 combo_rank #1；亮且相对稳 |
+| **6** | **彩票** | draftB-lottery | avGFP | `S65T:S72A:N105Y:S147N:I171S:L178V` | **1.27** | +1.05 | ml-top1 最亮候选；接受热稳定风险 |
 
-### 4.3 每条设计的风险评估
+> ML ratio = ESM2-35M + LightGBM 预测的初始亮度相对同母本 WT 的比值（**不含 72°C 热处理**）。  
+> ΔΔG = ThermoMPNN 单点 ΔΔG 求和（越负越稳）。完整序列见 `outputs/seeds.csv` / `outputs/submission.csv`。
 
-| Seq | 预期 Top-1 概率 | 失败模式 | 缓解 |
-|---|---|---|---|
-| 1 | 高保活，低增益 | avGFP 整体热稳定不足 → Ffinal 偏低 | 由 Seq_3/6 兜底 |
-| 2 | 中等保活，中等增益 | 5 突变累积扰动 | 由 Seq_1 兜底 |
-| 3 | 高稳定，亮度中性 | S72A 单点不显眼 | 单项最佳热稳定狙击 |
-| 4 | 高增益赌注 | K158G 与 F46L / V163A 不协同 | 由 Seq_1/2 兜底 |
-| 5 | 主力冲金 | 7 突变累积破坏 → Finitial 跌破红线 | 由 Seq_1/2 兜底 |
-| 6 | 高风险高收益 | A206K + K158G + sfGFP 三重叠加爆炸 | 接受失败 |
+### 4.3 从初稿到终稿的关键替换
 
-### 4.4 为什么 Seq_3 不是"sfGFP 原样"？
+| Seq | 初稿（规则设计） | 终稿（Draft B） | 替换理由 |
+|:---:|---|---|---|
+| 2 | winner-stack（ΔΔG +1.38） | cand#21 | 热稳定改善，ML 亮度 0.91× |
+| 4 | boost-engine（ΔΔG **+4.30**） | cand#23 | 原设计 ThermoMPNN 几乎必炸 |
+| 5 | gold-rush / ml-top1 | cand#2 | 比 ml-top1 略暗（1.25 vs 1.27）但 ΔΔG 由 +1.05 → **−0.35** |
+| 6 | sfGFP K158G:A206K | ml-top1 彩票 | 释放槽位给最亮组合，博 Top-1 上限 |
+
+保留不变：Seq_1（保底）、Seq_3（唯一 sfGFP 对照）。
+
+### 4.4 每条槽位的风险评估（终稿）
+
+| Seq | 槽位角色 | 主要风险 | 缓解 |
+|:---:|---|---|---|
+| 1 | 保底 | 亮度中等（0.88×） | 热稳定好；防全军覆没 |
+| 2 | 中稳 | 亮度非最高 | ΔΔG −0.48；与 Seq_1/4 形成中位带 |
+| 3 | sfGFP 对照 | ML 对 sfGFP 无训练数据 | 热稳定好；测试 superfolder 假设 |
+| 4 | 中稳 | ratio 0.90× | 已消除原 Seq_4 的热稳定硬伤 |
+| 5 | 冲金主炮 | 与 Seq_1 Hamming=2 | combo_rank #1；亮 + 稳的最佳折中 |
+| 6 | 彩票 | ΔΔG +1.05，热处理可能掉亮度 | 初始最亮（1.27×）；专博 Top-1 上限 |
+
+### 4.5 为什么 Seq_3 不是"sfGFP 原样"？
 
 `sfGFP WT` 本身在 `Exclusion_List` 内（所有 WT 都被禁），exact match 即 0 分。所以做了**最小扰动**：`S72A`。这个改动满足：
 - 离开 Exclusion；
@@ -269,31 +283,31 @@ score(lethal_pos) = -100.0                  # 致死位惩罚
 - 不破坏 sfGFP 的热稳定核心（72 位远离发色团）；
 - 与"sfGFP 对照"语义最相近。
 
-### 4.5 多样性诊断（Day 2.5 收尾）
+### 4.6 多样性诊断（终稿）
 
 ```
-两两 Hamming 矩阵 (after Seq_5 加 Q157G 修正):
+两两 Hamming 矩阵（Draft B，见 outputs/03_pairwise_hamming.csv）:
        Seq_1  Seq_2  Seq_3  Seq_4  Seq_5  Seq_6
- Seq_1   0     3    10     5     5    12
- Seq_2   3     0     8     6     2    10
- Seq_3  10     8     0    13    10     3
- Seq_4   5     6    13     0     4    11
- Seq_5   5     2    10     4     0    10
- Seq_6  12    10     3    11    10     0
+ Seq_1   0     3    10     3     2     4
+ Seq_2   3     0    12     6     3     5
+ Seq_3  10    12     0    11    12    12
+ Seq_4   3     6    11     0     3     5
+ Seq_5   2     3    12     3     0     4
+ Seq_6   4     5    12     5     4     0
 
-mean=7.47  median=8  min=2  max=13
-unique parents = 2 (avGFP × 4, sfGFP × 2)
+mean=6.33  median=5  min=2  max=12
+unique parents = 2 (avGFP × 5, sfGFP × 1)
 ```
 
 **已知 tradeoff**：
-- Seq_2 vs Seq_5 = 2（Seq_5 = Seq_2 + F46L + Q157G），但二者意图不同——Seq_5 是"再加两点是否能放大增益"的实验
-- 仅 2 个母本：cgreGFP 备选已草稿（见 `outputs/03_cgreGFP_candidate.txt`），ML 阶段补强
+- Seq_1 vs Seq_5 = **2**（共享 S65T:S72A + K79R/L178V 路径），保底与冲金同骨架，仍满足 6 条互不相同
+- 母本仅 av/sf 两类；cgreGFP 备选见 `outputs/03_cgreGFP_candidate.txt`
 
-判定：`NEEDS_DIVERSIFICATION` — 当前为可接受的保底，ML 阶段会引入更多样的设计。
+判定：`NEEDS_DIVERSIFICATION`（脚本自动 verdict）— 对打榜可接受；6 条功能梯度清晰。
 
 ---
 
-## 5. 合规与可合成性检查（Day 2.5 收尾）
+## 5. 合规与可合成性检查（终稿验收）
 
 `07_dnachisel_check.py` 对 6 条种子做了**完整体检**：
 
@@ -319,63 +333,54 @@ unique parents = 2 (avGFP × 4, sfGFP × 2)
 
 | Seq | DNA len | GC% | 约束 | 耗时 |
 |---|---|---|---|---|
-| 1 | 714 | 49.86% | ✅ 全过 | 0.12 s |
-| 2 | 714 | 49.86% | ✅ 全过 | 0.13 s |
-| 3 | 714 | 50.70% | ✅ 全过 | 0.14 s |
-| 4 | 714 | 50.28% | ✅ 全过 | 0.13 s |
-| 5 | 714 | 50.42% | ✅ 全过 | 0.13 s |
-| 6 | 714 | 50.56% | ✅ 全过 | 0.13 s |
+| 1 | 714 | 50.0% | ✅ 全过 | 0.14 s |
+| 2 | 714 | 50.3% | ✅ 全过 | 0.13 s |
+| 3 | 714 | 51.0% | ✅ 全过 | 0.13 s |
+| 4 | 714 | 49.4% | ✅ 全过 | 0.14 s |
+| 5 | 714 | 50.1% | ✅ 全过 | 0.13 s |
+| 6 | 714 | 50.0% | ✅ 全过 | 0.14 s |
 
 → **6 条全部可合成**，赛方 CFPS 流程理论上不会因序列问题失败。
 
 ### 5.4 最终判定
-**6/6 OK** — 当前 `outputs/submission.csv` 可作为合规保底直接提交。
+
+**6/6 OK** — `python src/06_make_submission.py --team 新次元小队 --strict-check` 已通过。  
+最终提交文件：`outputs/submission.csv`（CRLF，1575 字节，队名=新次元小队）。
 
 ---
 
-## 6. 已知局限与下一步
+## 6. 机器学习与热稳定阶段（已完成）
 
-### 6.1 当前局限
+### 6.1 ML 亮度模型
 
-1. **完全没用 ML 模型评估亮度**——全靠规则与历史先验，对未知组合效应估计有限
-2. **完全没有热稳定预测**——本届新增的 72°C 维度是评分核心，目前完全靠 sfGFP 的"经验稳定性"
-3. **只有 2 个母本**（avGFP / sfGFP）——cgreGFP（最亮 WT）未利用
-4. **6 条之间相关性较高**——Seq_2 vs Seq_5 hamming = 2
-5. **K158G 是个赌注**——单点 2.48× 来自 7 次观察，与多点组合的协同未知
-
-### 6.2 P0：提交保底（已可做）
-
-- ✅ `outputs/submission.csv` 已生成（CRLF + 字节级对齐模板）
-- ⏳ 写 `docs/agent_log.md`（LLM 决策日志）
-
-### 6.3 P1：ML 阶段（**需 GPU，¥10–20**）
-
-| 脚本 | 工作 | 目标 |
-|---|---|---|
-| `src/04_embed_esm.py` | ESM2-150M 嵌入 ≥ 20k 序列（教程仅 5k） | 训练样本充足 |
-| `src/05_train_regressor.py` | LightGBM 替代教程 RF；尝试 log10 → 线性反变换 | R² ≥ 0.40（教程仅 0.28） |
-| `src/06b_generate_candidates.py` | 用 30 位点池做组合突变 10k+，模型筛 Top-200 | 自动发现协同突变 |
-| 整合 | 用 ML Top-K 替换当前 Seq_4 / Seq_5 / Seq_6 中风险最高的 | Top-1 期望 +20-50% |
-
-### 6.4 P2：热稳定预测（**核心评分维度，需 GPU**）
-
-| 脚本 | 工作 |
+| 项目 | 结果 |
 |---|---|
-| `src/08_thermompnn.py` | 对 Top-200 候选跑 ThermoMPNN 全位点 ΔΔG 扫描 |
-| `src/09_esmfold_check.py` | ESMFold 算 pLDDT，过滤"结构不合理"设计 |
+| 嵌入 | ESM2-35M，141,365 序列，480 维 |
+| 回归 | LightGBM，Test **R² = 0.714**（教程 RF 基线 0.28） |
+| 候选搜索 | `06b_generate_candidates.py`，5000 组合 → Top-200 |
+| 产物 | `outputs/05_model_esm35m_lgbm.pkl`、`outputs/06b_top_candidates.csv` |
 
-无热稳定预测意味着我们的 Seq_4/5（avGFP 母本 + 多突变）**可能在 72°C 失活**。这是当前管线最大的盲区。
+### 6.2 ThermoMPNN 热稳定
 
-### 6.5 P3：多样性补强
+| 脚本 | 工作 | 产物 |
+|---|---|---|
+| `08_thermompnn.py` | 6 条 seeds 单点 ΔΔG | `outputs/08_thermompnn_seeds.csv` |
+| `08c_thermompnn_top200.py` | Top-200 候选 combo_rank | `outputs/08c_top200_scored.csv` |
 
-- 加 1 条 cgreGFP 母本设计（数据 WT 亮度 31403，是 avGFP 的 6×）
-- 加 1 条 sfGFP + TGP 同源稳定位点的"非 av/sf"设计
+Draft B 的 Seq_2/4/5/6 替换均来自 Top-200 中 **ML 亮度 × ThermoMPNN 稳定性** 的联合排序。
 
-### 6.6 P4：加分项
+### 6.3 仍存在的局限（诚实披露）
 
-- 设计思路 PDF（导出本文档）
-- `docs/agent_log.md`：LLM 与 Cursor Agent 的关键决策日志
-- GitHub 公开仓库 README 已完成 ✅
+1. **ML 只预测 Finitial**，不预测 72°C 后 Ffinal；Seq_6 彩票位 ΔΔG 仍为正
+2. **sfGFP 无训练数据**，Seq_3 的 ML ratio 只能近似参考
+3. **母本仅 av/sf**，cgreGFP（最亮 WT）未纳入终稿
+4. **Seq_1 ↔ Seq_5 Hamming = 2**，多样性脚本会警告，但 6 条序列互不相同
+
+### 6.4 可选后续（未纳入终稿）
+
+- ESMFold pLDDT 结构过滤（`09_esmfold_check.py` 待写）
+- cgreGFP 母本备选（见 `outputs/03_cgreGFP_candidate.txt`）
+- 设计思路 PDF / Agent 决策日志导出
 
 ---
 
