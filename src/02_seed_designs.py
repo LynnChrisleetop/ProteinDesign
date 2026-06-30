@@ -12,12 +12,12 @@
   - 母本对照：avGFP（赢家偏好）vs sfGFP（指南推荐）
 
 6 条梯度（指南 §3 推荐策略 D）：
-  Seq_1 保底  · avGFP + S65T + S72A
-  Seq_2 稳进  · avGFP + 5 处赢家高频
-  Seq_3 对照  · sfGFP + 最小扰动 S72A（脱 Exclusion）
-  Seq_4 增益  · avGFP + F46L + K158G + V163A
-  Seq_5 冲金  · avGFP + 6 处 Top-赢家 + K158G
-  Seq_6 高风险· sfGFP + K158G + A206K
+  Seq_1 safe-baseline      · avGFP + S65T + S72A
+  Seq_2 winner-stack       · avGFP + 5 处赢家高频
+  Seq_3 sfGFP-control-minus· sfGFP + 最小扰动 S72A（脱 Exclusion）
+  Seq_4 boost-engine       · avGFP + F46L + K158G + V163A
+  Seq_5 ml-top1-candidate  · avGFP + 6 处 Top-赢家 + K158G
+  Seq_6 high-risk-monomer  · sfGFP + K158G + A206K
 
 输出：
   - outputs/seeds.csv      · 6 条种子（Seq_ID, Strategy, Parent, Mutations, Sequence）
@@ -48,7 +48,7 @@ from utils import (  # noqa: E402
 SEED_PLAN = [
     {"Seq_ID": 1, "strategy": "safe-baseline",
      "parent": "avGFP", "mutations": "S65T:S72A",
-     "rationale": "保底；赢家最高频两改 (9/20 each)"},
+     "rationale": "保守基线；赢家最高频两改 (9/20 each)"},
     {"Seq_ID": 2, "strategy": "winner-stack",
      "parent": "avGFP", "mutations": "S65T:S72A:Q80R:N105K:V163A",
      "rationale": "稳进；avGFP + 赢家 Top-5 高频改动"},

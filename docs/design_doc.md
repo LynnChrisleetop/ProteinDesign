@@ -33,7 +33,7 @@ S = \frac{F_{\text{initial}}}{F_{\text{initial}}^{\text{WT}}} \times \frac{F_{\t
 
 ### 1.4 战略选型
 
-打榜只看 6 条中的 **Top-1**。所以理性策略是**风险梯度**：用 1–2 条兜底（拿银），1–2 条主攻（争金），1 条狙击单项（最佳热稳定/亮度），1 条彩票（高风险高收益）。**绝不能** 6 条同质化。
+最终排名仅取决于 6 条中的 **Top-1**。因此采用**风险梯度**策略：1–2 条保守基线（保障下限）、1–2 条稳健/主攻候选（争取高分）、1 条对照组、1 条高风险探索（高方差设计）。**不应**让 6 条设计同质化。
 
 ---
 
@@ -235,20 +235,20 @@ score(lethal_pos) = -100.0                  # 致死位惩罚
 
 1. **避开致死黑名单**（含 Y66 发色团）
 2. **规则初筛 + ML 亮度 + ThermoMPNN 热稳定** 三阶段收敛
-3. **梯度排布**：保底 1 条 → 中稳 2 条 → sfGFP 对照 1 条 → 冲金 1 条 → 彩票 1 条
+3. **梯度排布**：safe-baseline 1 条 → draftB-repl 2 条 → sfGFP-control 1 条 → draftB-gold-c2 1 条 → draftB-lottery 1 条
 4. **母本**：avGFP × 5 + sfGFP × 1（Seq_3 保留 superfolder 对照）
-5. **6 条序列互不相同**；Seq_1 ↔ Seq_5 Hamming = 2（共享 S65T:S72A 骨架，刻意「保底 + 冲金」）
+5. **6 条序列互不相同**；Seq_1 ↔ Seq_5 Hamming = 2（共享 S65T:S72A 骨架，保守基线与主攻候选同骨架）
 
 ### 4.2 最终 6 条明细（提交版）
 
-| Seq | 角色 | 策略 | 母本 | 突变（with_M） | ML ratio | ΔΔG | 设计动机 |
+| Seq | 策略节点 | strategy | 母本 | 突变（with_M） | ML ratio | ΔΔG | 设计动机 |
 |:---:|---|---|---|---|:---:|:---:|---|
-| **1** | 保底 | safe-baseline | avGFP | `S65T:S72A` | 0.88 | −0.11 | 赢家最高频两改，最少扰动 |
-| **2** | 中稳 | draftB-repl-c21 | avGFP | `S65T:S72A:K79R:N105Y:I167V` | 0.91 | −0.48 | 替换原 winner-stack；Top200 cand#21 |
-| **3** | sfGFP 对照 | sfGFP-control | sfGFP | `S72A` | 0.70 | −0.10 | superfolder 骨架 + 最小扰动 |
-| **4** | 中稳 | draftB-repl-c23 | avGFP | `S65T:S72A:V93F:L178V:A206V` | 0.90 | −0.52 | 替换原 boost-engine（原 ΔΔG +4.3）；cand#23 |
-| **5** | **冲金主炮** | draftB-gold-c2 | avGFP | `S65T:S72A:K79R:L178V` | **1.25** | **−0.35** | Top200 combo_rank #1；亮且相对稳 |
-| **6** | **彩票** | draftB-lottery | avGFP | `S65T:S72A:N105Y:S147N:I171S:L178V` | **1.27** | +1.05 | ml-top1 最亮候选；接受热稳定风险 |
+| **1** | 保守基线 | safe-baseline | avGFP | `S65T:S72A` | 0.88 | −0.11 | 赢家最高频两改，最少扰动 |
+| **2** | 稳健候选 | draftB-repl-c21 | avGFP | `S65T:S72A:K79R:N105Y:I167V` | 0.91 | −0.48 | 替换原 winner-stack；Top200 cand#21 |
+| **3** | 对照组 | sfGFP-control | sfGFP | `S72A` | 0.70 | −0.10 | superfolder 骨架 + 最小扰动 |
+| **4** | 稳健候选 | draftB-repl-c23 | avGFP | `S65T:S72A:V93F:L178V:A206V` | 0.90 | −0.52 | 替换原 boost-engine（原 ΔΔG +4.3）；cand#23 |
+| **5** | **主攻候选** | draftB-gold-c2 | avGFP | `S65T:S72A:K79R:L178V` | **1.25** | **−0.35** | Top200 combo_rank #1；亮度与热稳定折中 |
+| **6** | **高风险探索** | draftB-lottery-mltop1 | avGFP | `S65T:S72A:N105Y:S147N:I171S:L178V` | **1.27** | +1.05 | ml-top1 最亮候选；接受热稳定风险 |
 
 > ML ratio = ESM2-35M + LightGBM 预测的初始亮度相对同母本 WT 的比值（**不含 72°C 热处理**）。  
 > ΔΔG = ThermoMPNN 单点 ΔΔG 求和（越负越稳）。完整序列见 `outputs/seeds.csv` / `outputs/submission.csv`。
@@ -258,22 +258,22 @@ score(lethal_pos) = -100.0                  # 致死位惩罚
 | Seq | 初稿（规则设计） | 终稿（Draft B） | 替换理由 |
 |:---:|---|---|---|
 | 2 | winner-stack（ΔΔG +1.38） | cand#21 | 热稳定改善，ML 亮度 0.91× |
-| 4 | boost-engine（ΔΔG **+4.30**） | cand#23 | 原设计 ThermoMPNN 几乎必炸 |
+| 4 | boost-engine（ΔΔG **+4.30**） | cand#23 | 原设计 ThermoMPNN 预测热稳定性显著恶化 |
 | 5 | gold-rush / ml-top1 | cand#2 | 比 ml-top1 略暗（1.25 vs 1.27）但 ΔΔG 由 +1.05 → **−0.35** |
-| 6 | sfGFP K158G:A206K | ml-top1 彩票 | 释放槽位给最亮组合，博 Top-1 上限 |
+| 6 | sfGFP K158G:A206K | draftB-lottery-mltop1 | 释放槽位给最亮组合，追求 Top-1 得分上限 |
 
-保留不变：Seq_1（保底）、Seq_3（唯一 sfGFP 对照）。
+保留不变：Seq_1（safe-baseline）、Seq_3（唯一 sfGFP-control 对照）。
 
 ### 4.4 每条槽位的风险评估（终稿）
 
-| Seq | 槽位角色 | 主要风险 | 缓解 |
+| Seq | 策略节点 | 主要风险 | 缓解 |
 |:---:|---|---|---|
-| 1 | 保底 | 亮度中等（0.88×） | 热稳定好；防全军覆没 |
-| 2 | 中稳 | 亮度非最高 | ΔΔG −0.48；与 Seq_1/4 形成中位带 |
-| 3 | sfGFP 对照 | ML 对 sfGFP 无训练数据 | 热稳定好；测试 superfolder 假设 |
-| 4 | 中稳 | ratio 0.90× | 已消除原 Seq_4 的热稳定硬伤 |
-| 5 | 冲金主炮 | 与 Seq_1 Hamming=2 | combo_rank #1；亮 + 稳的最佳折中 |
-| 6 | 彩票 | ΔΔG +1.05，热处理可能掉亮度 | 初始最亮（1.27×）；专博 Top-1 上限 |
+| 1 | safe-baseline | 亮度中等（0.88×） | 热稳定好；保障得分下限 |
+| 2 | draftB-repl-c21 | 亮度非最高 | ΔΔG −0.48；与 Seq_1/4 形成中位带 |
+| 3 | sfGFP-control | ML 对 sfGFP 无训练数据 | 热稳定好；测试 superfolder 假设 |
+| 4 | draftB-repl-c23 | ratio 0.90× | 已消除原 Seq_4 的热稳定缺陷 |
+| 5 | draftB-gold-c2 | 与 Seq_1 Hamming=2 | combo_rank #1；亮度与热稳定的最佳折中 |
+| 6 | draftB-lottery-mltop1 | ΔΔG +1.05，热处理可能降低亮度 | 初始最亮（1.27×）；专门追求 Top-1 得分上限 |
 
 ### 4.5 为什么 Seq_3 不是"sfGFP 原样"？
 
@@ -300,10 +300,10 @@ unique parents = 2 (avGFP × 5, sfGFP × 1)
 ```
 
 **已知 tradeoff**：
-- Seq_1 vs Seq_5 = **2**（共享 S65T:S72A + K79R/L178V 路径），保底与冲金同骨架，仍满足 6 条互不相同
+- Seq_1 vs Seq_5 = **2**（共享 S65T:S72A + K79R/L178V 路径），safe-baseline 与 draftB-gold-c2 同骨架，仍满足 6 条互不相同
 - 母本仅 av/sf 两类；cgreGFP 备选见 `outputs/03_cgreGFP_candidate.txt`
 
-判定：`NEEDS_DIVERSIFICATION`（脚本自动 verdict）— 对打榜可接受；6 条功能梯度清晰。
+判定：`NEEDS_DIVERSIFICATION`（脚本自动 verdict）— 对 Top-1 排名评估可接受；6 条功能梯度清晰。
 
 ---
 
@@ -371,7 +371,7 @@ Draft B 的 Seq_2/4/5/6 替换均来自 Top-200 中 **ML 亮度 × ThermoMPNN �
 
 ### 6.3 仍存在的局限（诚实披露）
 
-1. **ML 只预测 Finitial**，不预测 72°C 后 Ffinal；Seq_6 彩票位 ΔΔG 仍为正
+1. **ML 只预测 Finitial**，不预测 72°C 后 Ffinal；Seq_6 draftB-lottery-mltop1 位 ΔΔG 仍为正
 2. **sfGFP 无训练数据**，Seq_3 的 ML ratio 只能近似参考
 3. **母本仅 av/sf**，cgreGFP（最亮 WT）未纳入终稿
 4. **Seq_1 ↔ Seq_5 Hamming = 2**，多样性脚本会警告，但 6 条序列互不相同
@@ -423,7 +423,7 @@ python src/06_make_submission.py --team <YourTeam> --strict-check
 
 > "先保活，再求强" — 30% 红线决定一切；任何"亮度爆表但 72°C 一把炸没"的设计都是 0 分
 
-> "组合优于孤注" — 打榜只看 Top-1，但 6 条间的风险梯度才决定中签概率
+> "组合优于孤注" — 最终排名仅看 Top-1，但 6 条间的风险梯度才决定整体成功概率
 
 > "数据 + 文献 + 赢家 diff 三家收敛 → 可信" — 任何一家单独都可能误导，三家收敛才是真信号
 

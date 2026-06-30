@@ -38,14 +38,14 @@ S = \frac{F_{\text{final}}}{F_{\text{initial}}^{\text{WT}}}
 
 ## 最终提交的 6 条序列
 
-| Seq | 角色 | 母本 | 突变 | ML 亮度 ratio | ThermoMPNN ΔΔG |
-|-----|------|------|------|---------------|----------------|
-| 1 | 保底 | avGFP | `S65T:S72A` | 0.88 | -0.11 |
-| 2 | 中稳 | avGFP | `S65T:S72A:K79R:N105Y:I167V` | 0.91 | -0.48 |
-| 3 | sfGFP 对照 | sfGFP | `S72A` | 0.70 | -0.10 |
-| 4 | 中稳 | avGFP | `S65T:S72A:V93F:L178V:A206V` | 0.90 | -0.52 |
-| 5 | **冲金主炮** | avGFP | `S65T:S72A:K79R:L178V` | **1.25** | **-0.35** |
-| 6 | **彩票（最亮）** | avGFP | `S65T:S72A:N105Y:S147N:I171S:L178V` | **1.27** | +1.05 |
+| Seq | 策略（节点） | 母本 | 突变 | ML 亮度 ratio | ThermoMPNN ΔΔG |
+|-----|-------------|------|------|---------------|----------------|
+| 1 | safe-baseline（保守基线） | avGFP | `S65T:S72A` | 0.88 | -0.11 |
+| 2 | draftB-repl-c21（稳健候选） | avGFP | `S65T:S72A:K79R:N105Y:I167V` | 0.91 | -0.48 |
+| 3 | sfGFP-control（对照组） | sfGFP | `S72A` | 0.70 | -0.10 |
+| 4 | draftB-repl-c23（稳健候选） | avGFP | `S65T:S72A:V93F:L178V:A206V` | 0.90 | -0.52 |
+| 5 | **draftB-gold-c2（主攻候选）** | avGFP | `S65T:S72A:K79R:L178V` | **1.25** | **-0.35** |
+| 6 | **draftB-lottery-mltop1（高风险探索）** | avGFP | `S65T:S72A:N105Y:S147N:I171S:L178V` | **1.27** | +1.05 |
 
 完整序列见 `outputs/seeds.csv` / `outputs/submission.csv`。
 
