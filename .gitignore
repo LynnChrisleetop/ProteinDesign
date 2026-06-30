@@ -36,6 +36,12 @@ BOHRIUM.md
 docs/gpu_launch.md
 scripts/bohrium_init.sh
 tools/
+参赛指南.md
+
+# --- Draft A 过时产物（终稿为 Draft B seeds.csv；可本地 05b/08 重跑后生成）---
+outputs/05b_seed_predictions.csv
+outputs/08_thermompnn_seeds.csv
+outputs/08_thermompnn_mutations.csv
 
 # --- 大文件（模型权重、缓存）---
 *.pt
