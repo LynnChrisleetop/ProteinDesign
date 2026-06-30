@@ -28,26 +28,35 @@ S = \frac{F_{\text{final}}}{F_{\text{initial}}^{\text{WT}}}
 | **② 位点分析** | `01_position_pool.py` | `position_pool.csv`、`lethal_blacklist.csv` | CPU |
 | **③ 序列设计** | `02_seed_designs.py` | `seeds.csv`、`seeds.fasta` | CPU |
 | **④ 合规与多样性** | `07_dnachisel_check.py`、`03_diversity_check.py` | `07_seed_check.csv`、`03_diversity_report.json` | CPU |
-| **⑤ 机器学习** | `04_embed_esm.py` → `05_train_regressor.py` → `05b_predict_seeds.py` → `06b_generate_candidates.py` | 嵌入 `.npz`、模型 `.pkl`、候选 CSV | **GPU** |
-| **⑥ 热稳定评估** | `08_thermompnn.py`、`08c_thermompnn_top200.py` | ThermoMPNN ΔΔG、替换建议 | **GPU** |
+| **⑤ 机器学习** | `04_embed_esm.py` → `05_train_regressor.py` → `06b_generate_candidates.py` | 嵌入 `.npz`、模型 `.pkl`、候选 CSV | **GPU** |
+| **⑥ 热稳定评估** | `08c_thermompnn_top200.py`（可选 `08_thermompnn.py`） | Top-200 联合评分、替换建议 | **GPU / CPU†** |
 | **⑦ 提交生成** | `06_make_submission.py` | `submission.csv`（CRLF） | CPU |
+| **⑧ 往届验证（可选）** | `05c_predict_winners.py`、`08d_predict_winners.py` | 20 条 beforetopseqs 的 ML 亮度 / ThermoMPNN 评分 | **GPU / CPU†** |
+
+† 仓库已包含 `outputs/ThermoMPNN_inference_2WUR.csv` 与 `2B3P.csv` 时，`08` / `08c` / `08d` 可直接查表，**无需**重跑 ThermoMPNN 推理。
 
 设计思路详见 [docs/design_doc.md](./docs/design_doc.md)。
+
+### 终稿 6 条的评分来源
+
+Draft B 终稿（`outputs/seeds.csv`）中每条序列的 **ML 亮度 ratio** 与 **ThermoMPNN ΔΔG** 来自 `08c_top200_scored.csv` 与 `seeds.csv` 的 `rationale` 字段（候选搜索 + 联合排序），**不是** `05b` / `08` 对 seeds 的单独跑批 CSV。后两者为可选本地脚本输出，已在 `.gitignore` 中忽略。
 
 ---
 
 ## 最终提交的 6 条序列
 
+> ML ratio = 模型预测的 **初始亮度**（Finitial）相对同母本 WT 的比值，**不含** 72°C 热处理。
+
 | Seq | 策略（节点） | 母本 | 突变 | ML 亮度 ratio | ThermoMPNN ΔΔG |
 |-----|-------------|------|------|---------------|----------------|
 | 1 | safe-baseline（保守基线） | avGFP | `S65T:S72A` | 0.88 | -0.11 |
 | 2 | draftB-repl-c21（稳健候选） | avGFP | `S65T:S72A:K79R:N105Y:I167V` | 0.91 | -0.48 |
-| 3 | sfGFP-control（对照组） | sfGFP | `S72A` | 0.70 | -0.10 |
+| 3 | sfGFP-control-minus（对照组） | sfGFP | `S72A` | 0.70 | -0.10 |
 | 4 | draftB-repl-c23（稳健候选） | avGFP | `S65T:S72A:V93F:L178V:A206V` | 0.90 | -0.52 |
 | 5 | **draftB-gold-c2（主攻候选）** | avGFP | `S65T:S72A:K79R:L178V` | **1.25** | **-0.35** |
 | 6 | **draftB-lottery-mltop1（高风险探索）** | avGFP | `S65T:S72A:N105Y:S147N:I171S:L178V` | **1.27** | +1.05 |
 
-完整序列见 `outputs/seeds.csv` / `outputs/submission.csv`。
+完整序列见 `outputs/seeds.csv` / `outputs/submission.csv`。上表数值为四舍五入展示；精确值见 `seeds.csv` 的 `rationale`（如 cand#21 `ratio=0.907`、`ddG=-0.478`）。
 
 ---
 
@@ -59,7 +68,8 @@ S = \frac{F_{\text{final}}}{F_{\text{initial}}^{\text{WT}}}
 |------|------|
 | 操作系统 | Linux（已在 Ubuntu 22.04 测试） |
 | Python | **3.10** |
-| GPU（阶段⑤⑥） | NVIDIA GPU + CUDA 12.1（V100 32GB 即可） |
+| GPU（阶段⑤ 嵌入/训练） | NVIDIA GPU + CUDA 12.1（V100 32GB 即可） |
+| GPU（阶段⑥ ThermoMPNN 重推理） | 可选；有缓存 CSV 时可 CPU 查表 |
 
 ### 一键安装
 
@@ -69,7 +79,7 @@ cd ProteinDesign
 bash scripts/setup_env.sh
 ```
 
-脚本会安装 PyTorch、fair-esm、LightGBM、DnaChisel，并将 ThermoMPNN 等 clone 到 `third_party/`。
+脚本会安装 PyTorch、fair-esm、LightGBM、DnaChisel，并将 ThermoMPNN clone 到 `third_party/`（**仅重跑 ThermoMPNN 推理时需要**；查表评分用仓库内 `ThermoMPNN_inference_*.csv` 即可）。
 
 ### 手动安装（pip）
 
@@ -114,7 +124,7 @@ python -c "from src.utils import DATA_DIR; print(DATA_DIR)"
 |------|------|------|
 | **ESM2-35M** (`fair-esm`) | 序列嵌入 | 默认 `esm2_t12_35M_UR50D`，480 维 |
 | **LightGBM** | 亮度回归（log10） | 训练集 Test R² ≈ 0.71 |
-| **ThermoMPNN** | 热稳定 ΔΔG | `third_party/ThermoMPNN`，需 GPU |
+| **ThermoMPNN** | 热稳定 ΔΔG | 查表用 `outputs/ThermoMPNN_inference_*.csv`；重推理需 `third_party/ThermoMPNN` + PDB |
 | **DnaChisel** | 反向翻译 / 合成可行性 | 提交前自检 |
 
 大文件（`*.npz` 嵌入、`*.pkl` 模型权重）在 `.gitignore` 中，**需运行阶段⑤重新生成**。
@@ -135,27 +145,36 @@ python src/07_dnachisel_check.py
 python src/03_diversity_check.py
 ```
 
-### 阶段 ⑤：机器学习 — 嵌入、训练、推理、候选（GPU）
+### 阶段 ⑤：机器学习 — 嵌入、训练、候选（GPU）
 
 ```bash
 python src/04_embed_esm.py --model t12_35M
 python src/05_train_regressor.py
-python src/05b_predict_seeds.py
 python src/06b_generate_candidates.py --n-samples 5000 --top-k 20
 ```
 
-**推理入口**（已有模型权重时）：
+`06b` 默认采样 5000 组合、输出 Top-20 到 `06b_top_candidates.csv`，全量合规候选写入 `06b_candidates_all.csv`（供 `08c` 取亮度 Top-200）。
+
+**已有模型权重时**（跳过 04/05）：
 
 ```bash
-python src/05b_predict_seeds.py --model-pkl outputs/05_model_esm35m_lgbm.pkl
 python src/06b_generate_candidates.py --model-pkl outputs/05_model_esm35m_lgbm.pkl
 ```
 
-### 阶段 ⑥：热稳定评估（GPU）
+**可选**：对当前 `seeds.csv` 单独打 ML 分（输出在 `.gitignore`，仅本地）：
 
 ```bash
-python src/08_thermompnn.py
+python src/05b_predict_seeds.py --model-pkl outputs/05_model_esm35m_lgbm.pkl
+```
+
+### 阶段 ⑥：热稳定评估
+
+```bash
+# Draft B 决策主路径：Top-200 亮度 × 稳定性联合排序
 python src/08c_thermompnn_top200.py
+
+# 可选：仅对 6 条 seeds 汇总 ddG（输出在 .gitignore，仅本地）
+python src/08_thermompnn.py
 ```
 
 ### 阶段 ⑦：生成提交文件
@@ -166,23 +185,33 @@ python src/06_make_submission.py --team 新次元小队 --strict-check
 
 输出：`outputs/submission.csv`（UTF-8 无 BOM，CRLF 行尾，表头 `Team_Name,Seq_ID,Sequence`）。
 
+### 阶段 ⑧（可选）：往届 20 条高分序列 sanity check
+
+```bash
+python src/05c_predict_winners.py    # ML 亮度 → outputs/05c_winner_predictions.csv
+python src/08d_predict_winners.py    # ThermoMPNN → outputs/08d_thermompnn_winners.csv
+```
+
+赛方 `beforetopseqs` **无实验亮度标签**；仅用于检验模型是否整体认可往届设计策略。
+
 ---
 
 ## 仓库结构
 
 ```
 ProteinDesign/
-├── README.md                 # 环境 + 复现 + 推理说明（本文件）
+├── README.md                 # 环境 + 复现 + 推理说明（本文件，公开入口）
 ├── requirements.txt          # Python 依赖清单
-├── 参赛指南.md                # 战略与规则解读
 ├── scripts/setup_env.sh      # 一键环境初始化
-├── src/                      # 流水线脚本
+├── src/                      # 流水线脚本（含 05c / 08d 往届验证）
 ├── data/processed/           # WT 等清洗产物
-├── inputs/pdb/               # PDB（ThermoMPNN 用）
-├── third_party/              # ThermoMPNN 等（setup 脚本 clone）
+├── inputs/pdb/               # PDB（ThermoMPNN 重推理时需自行下载）
+├── third_party/              # ThermoMPNN 等（setup 脚本 clone，未 clone 时可查表）
 ├── docs/design_doc.md        # 设计思路（可导出 PDF 提交）
 └── outputs/                  # 实验产物与 submission.csv
 ```
+
+**不进公开仓库的内容**（见 `.gitignore`）：赛方原始数据、`*.npz` / `*.pkl` 模型、队内内部笔记 `参赛指南.md`、可选脚本输出 `05b_seed_predictions.csv` 与 `08_thermompnn_*.csv`。
 
 ---
 
@@ -191,6 +220,7 @@ ProteinDesign/
 - CPU / GPU 流水线在 Python 3.10 + Ubuntu 22.04 下测试通过。
 - 赛方原始数据未在仓库中分发，请从赛方渠道获取。
 - 随机种子：`06b_generate_candidates.py` 默认 `--rng-seed 42`；LightGBM `random_state=42`。
+- 终稿序列为 **Draft B**（`v1.1.0` 用语规范化）；历史 Draft A 中间 CSV 已从 Git 移除。
 
 ---
 
@@ -198,9 +228,10 @@ ProteinDesign/
 
 | 文档 | 内容 |
 |------|------|
-| [README.md](./README.md) | 环境、依赖、运行方式（竞赛复现入口） |
-| [参赛指南.md](./参赛指南.md) | 规则、策略、位点池方法论 |
-| [docs/design_doc.md](./docs/design_doc.md) | 完整设计决策与数据分析 |
+| [README.md](./README.md) | 环境、依赖、运行方式（**竞赛复现公开入口**） |
+| [docs/design_doc.md](./docs/design_doc.md) | 完整设计决策、数据分析与终稿 rationale |
+
+队内战略笔记（规则解读、7 日冲刺计划等）保留在本地 `参赛指南.md`，**不随仓库分发**。
 
 ---
 
